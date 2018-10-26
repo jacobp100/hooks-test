@@ -1,28 +1,51 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef, useCallback } from "react";
+import { tween } from "popmotion";
+import useCanvasDrawer from "./useCanvasDrawer";
+import usePopmotionD3Zoom from "./usePopmotionD3Zoom";
+import drawMap from "./drawMap";
+import zoomFromCentre from "./zoomFromCentre";
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
-}
+const width = 500;
+const height = 500;
+const scale = window.devicePixelRatio;
 
-export default App;
+export default () => {
+  const ref = useRef(null);
+
+  const updateCanvas = useCanvasDrawer(ref, drawMap, { width, height, scale });
+  const coordinates = usePopmotionD3Zoom(ref, updateCanvas);
+
+  const zoom = useCallback(scale => {
+    tween({
+      from: coordinates.get(),
+      to: zoomFromCentre(width, height, scale, coordinates)
+    }).start(coordinates);
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    tween({
+      from: coordinates.get(),
+      to: { x: 0, y: 0, zoom: 1 }
+    }).start(coordinates);
+  }, []);
+
+  return (
+    <React.Fragment>
+      <canvas
+        ref={ref}
+        style={{ display: "block", width, height }}
+        width={width * scale}
+        height={height * scale}
+      />
+      <button type="button" onClick={() => zoom(1.5)}>
+        Zoom In
+      </button>
+      <button type="button" onClick={() => zoom(1 / 1.5)}>
+        Zoom Out
+      </button>
+      <button type="button" onClick={resetZoom}>
+        Reset Zoom
+      </button>
+    </React.Fragment>
+  );
+};
