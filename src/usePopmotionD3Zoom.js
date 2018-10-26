@@ -18,10 +18,12 @@ export default (ref, updater) => {
   }, []);
   const setD3Coordinates = useD3Zoom(ref, updateCoordinates);
 
-  useEffect(() => {
-    coordinates.current.subscribe(setD3Coordinates);
-    coordinates.current.subscribe(updater);
-  }, []);
+  useEffect(() => coordinates.current.subscribe(setD3Coordinates).unsubscribe, [
+    setD3Coordinates
+  ]);
+  useEffect(() => coordinates.current.subscribe(updater).unsubscribe, [
+    updater
+  ]);
 
   return coordinates.current;
 };

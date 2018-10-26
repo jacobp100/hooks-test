@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { tween } from "popmotion";
 import useCanvasDrawer from "./useCanvasDrawer";
 import usePopmotionD3Zoom from "./usePopmotionD3Zoom";
@@ -11,8 +11,14 @@ const scale = window.devicePixelRatio;
 
 export default () => {
   const ref = useRef(null);
+  const [color, setColor] = useState("black");
 
-  const updateCanvas = useCanvasDrawer(ref, drawMap, { width, height, scale });
+  const updateCanvas = useCanvasDrawer(ref, drawMap, {
+    color,
+    width,
+    height,
+    scale
+  });
   const coordinates = usePopmotionD3Zoom(ref, updateCanvas);
 
   const zoom = useCallback(scale => {
@@ -45,6 +51,19 @@ export default () => {
       </button>
       <button type="button" onClick={resetZoom}>
         Reset Zoom
+      </button>
+      <br />
+      <button type="button" onClick={() => setColor("red")}>
+        Red
+      </button>
+      <button type="button" onClick={() => setColor("green")}>
+        Green
+      </button>
+      <button type="button" onClick={() => setColor("blue")}>
+        Blue
+      </button>
+      <button type="button" onClick={() => setColor("black")}>
+        Black
       </button>
     </React.Fragment>
   );

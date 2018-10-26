@@ -1,10 +1,10 @@
 import { range } from "d3";
 
-export default (ctx, { x, y, zoom }, { width, height, scale = 1 }) => {
+export default (ctx, { color, width, height, scale = 1 }, { x, y, zoom }) => {
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   ctx.clearRect(0, 0, width, height);
   ctx.setTransform(zoom * scale, 0, 0, zoom * scale, x * scale, y * scale);
-  ctx.fillStyle = "black";
+  ctx.fillStyle = color;
   drawPoints(ctx);
 };
 
