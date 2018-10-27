@@ -2,16 +2,24 @@ import { useRef, useEffect, useCallback } from "react";
 import { selection, event } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
 
-export default (ref, updater) => {
+const noop = () => {};
+
+export default (
+  ref,
+  { onStartZoom = noop, onZoom = noop, onEndZoom = noop }
+) => {
   const selectionRef = useRef(null);
   const zoomRef = useRef(null);
 
   useEffect(() => {
     selectionRef.current = selection(ref.current);
-    zoomRef.current = zoom().on("zoom", () => {
-      const { x, y, k } = event.transform;
-      updater({ x, y, zoom: k });
-    });
+    zoomRef.current = zoom()
+      .on("start.zoom", onStartZoom)
+      .on("zoom", () => {
+        const { x, y, k } = event.transform;
+        onZoom({ x, y, zoom: k });
+      })
+      .on("end.zoom", onEndZoom);
     selectionRef.current.call(zoomRef.current);
 
     return () => {

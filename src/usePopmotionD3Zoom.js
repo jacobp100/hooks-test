@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
-import { value } from "popmotion";
+import { value, physics } from "popmotion";
 import useD3Zoom from "./useD3Zoom";
+import useMomentumPanning from "./useMomentumPanning";
 
 export default (ref, updater) => {
   const coordinates = useRef(null);
@@ -12,11 +13,29 @@ export default (ref, updater) => {
     });
   }
 
-  const updateCoordinates = useCallback(c => {
+  const runPanAnimation = ({ xVelocity, yVelocity }) => {
+    physics({
+      from: coordinates.current.get(),
+      velocity: { x: xVelocity, y: yVelocity, zoom: 0 },
+      friction: 0.3
+    }).start(coordinates.current);
+  };
+
+  const momentumPanning = useMomentumPanning(runPanAnimation);
+
+  const onStartZoom = () => {
     coordinates.current.stop();
-    coordinates.current.update(c);
+    momentumPanning.start();
+  };
+  const onZoom = useCallback(coords => {
+    coordinates.current.stop();
+    coordinates.current.update(coords);
+    momentumPanning.addPoint(coords);
   }, []);
-  const setD3Coordinates = useD3Zoom(ref, updateCoordinates);
+  const onEndZoom = () => {
+    momentumPanning.end();
+  };
+  const setD3Coordinates = useD3Zoom(ref, { onStartZoom, onZoom, onEndZoom });
 
   useEffect(() => coordinates.current.subscribe(setD3Coordinates).unsubscribe, [
     setD3Coordinates
