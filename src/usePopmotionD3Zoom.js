@@ -13,28 +13,28 @@ export default (ref, updater) => {
     });
   }
 
-  const runPanAnimation = ({ xVelocity, yVelocity }) => {
+  const runPanAnimation = useCallback(({ xVelocity, yVelocity }) => {
     physics({
       from: coordinates.current.get(),
       velocity: { x: xVelocity, y: yVelocity, zoom: 0 },
       friction: 0.3
     }).start(coordinates.current);
-  };
+  }, []);
 
   const momentumPanning = useMomentumPanning(runPanAnimation);
 
-  const onStartZoom = () => {
+  const onStartZoom = useCallback(() => {
     coordinates.current.stop();
     momentumPanning.start();
-  };
+  }, []);
   const onZoom = useCallback(coords => {
     coordinates.current.stop();
     coordinates.current.update(coords);
     momentumPanning.addPoint(coords);
   }, []);
-  const onEndZoom = () => {
+  const onEndZoom = useCallback(() => {
     momentumPanning.end();
-  };
+  }, []);
   const setD3Coordinates = useD3Zoom(ref, { onStartZoom, onZoom, onEndZoom });
 
   useEffect(() => coordinates.current.subscribe(setD3Coordinates).unsubscribe, [
