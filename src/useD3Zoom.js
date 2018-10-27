@@ -19,39 +19,44 @@ export default (ref, callbacks) => {
   callbacksRef.current = callbacks;
 
   const selectionRef = useRef(null);
-  const zoomRef = useRef(null);
 
-  useEffect(() => {
-    selectionRef.current = select(ref.current);
-    zoomRef.current = zoom()
-      .on("start.zoom", () => {
-        const { onStartZoom } = callbacksRef.current;
-        if (onStartZoom != null) onStartZoom();
-      })
-      .on("zoom", () => {
-        const { onZoom } = callbacksRef.current;
-        if (onZoom != null) {
-          const { x, y, k } = event.transform;
-          onZoom({ x, y, zoom: k });
-        }
-      })
-      .on("end.zoom", () => {
-        const { onEndZoom } = callbacksRef.current;
-        if (onEndZoom != null) onEndZoom();
-      });
-    selectionRef.current.call(zoomRef.current);
+  useEffect(
+    () => {
+      selectionRef.current = select(ref.current);
+      const z = zoom()
+        .on("start.zoom", () => {
+          const { onStartZoom } = callbacksRef.current;
+          if (onStartZoom != null) onStartZoom();
+        })
+        .on("zoom", () => {
+          const { onZoom } = callbacksRef.current;
+          if (onZoom != null) {
+            const { x, y, k } = event.transform;
+            onZoom({ x, y, zoom: k });
+          }
+        })
+        .on("end.zoom", () => {
+          const { onEndZoom } = callbacksRef.current;
+          if (onEndZoom != null) onEndZoom();
+        });
+      selectionRef.current.call(z);
 
-    return () => {
-      selectionRef.current.on(".zoom", null);
-    };
-  }, []);
+      return () => {
+        selectionRef.current.on(".zoom", null);
+      };
+    },
+    [ref, selectionRef, callbacksRef]
+  );
 
-  const setZoom = useCallback(({ x, y, zoom }) => {
-    selectionRef.current.property(
-      "__zoom",
-      zoomIdentity.translate(x, y).scale(zoom)
-    );
-  }, []);
+  const setZoom = useCallback(
+    ({ x, y, zoom }) => {
+      selectionRef.current.property(
+        "__zoom",
+        zoomIdentity.translate(x, y).scale(zoom)
+      );
+    },
+    [selectionRef]
+  );
 
   return setZoom;
 };

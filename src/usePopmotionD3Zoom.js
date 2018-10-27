@@ -16,28 +16,40 @@ export default ref => {
   // Never changes
   const coordinates = coordinatesRef.current;
 
-  const runPanAnimation = useCallback(({ xVelocity, yVelocity }) => {
-    physics({
-      from: coordinates.get(),
-      velocity: { x: xVelocity, y: yVelocity, zoom: 0 },
-      friction: 0.3
-    }).start(coordinates);
-  }, []);
+  const runPanAnimation = useCallback(
+    ({ xVelocity, yVelocity }) => {
+      physics({
+        from: coordinates.get(),
+        velocity: { x: xVelocity, y: yVelocity, zoom: 0 },
+        friction: 0.3
+      }).start(coordinates);
+    },
+    [coordinates]
+  );
 
   const momentumPanning = useMomentumPanning(runPanAnimation);
 
-  const onStartZoom = useCallback(() => {
-    coordinates.stop();
-    momentumPanning.start();
-  }, []);
-  const onZoom = useCallback(coords => {
-    coordinates.stop();
-    coordinates.update(coords);
-    momentumPanning.addPoint(coords);
-  }, []);
-  const onEndZoom = useCallback(() => {
-    momentumPanning.end();
-  }, []);
+  const onStartZoom = useCallback(
+    () => {
+      coordinates.stop();
+      momentumPanning.start();
+    },
+    [coordinates, momentumPanning]
+  );
+  const onZoom = useCallback(
+    coords => {
+      coordinates.stop();
+      coordinates.update(coords);
+      momentumPanning.addPoint(coords);
+    },
+    [coordinates, momentumPanning]
+  );
+  const onEndZoom = useCallback(
+    () => {
+      momentumPanning.end();
+    },
+    [coordinates, momentumPanning]
+  );
   const setD3Coordinates = useD3Zoom(ref, { onStartZoom, onZoom, onEndZoom });
 
   usePopmotionOutput(coordinates, setD3Coordinates);
