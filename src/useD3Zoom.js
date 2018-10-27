@@ -2,24 +2,43 @@ import { useRef, useEffect, useCallback } from "react";
 import { select, event } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
 
-const noop = () => {};
+export default (ref, callbacks) => {
+  /*
+  Allow us to use the same event handlers for d3.zoom, even if the callbacks
+  change. This is actually a correctness issue rather than performance: if the
+  user is zooming when the callbacks changed, we would have removed the zoom
+  handlers. That is not what we would want.
 
-export default (
-  ref,
-  { onStartZoom = noop, onZoom = noop, onEndZoom = noop }
-) => {
+  This behaviour is also similar to how React Native internally handles events.
+  All events like `onPress` are actually instance properties (usually in the
+  form _onPress) that check if there is the equivalent callback in the prop,
+  and then calls it. The instance properties are then passed to the native code
+  component rather than the callback in the props.
+  */
+  const callbacksRef = useRef(null);
+  callbacksRef.current = callbacks;
+
   const selectionRef = useRef(null);
   const zoomRef = useRef(null);
 
   useEffect(() => {
     selectionRef.current = select(ref.current);
     zoomRef.current = zoom()
-      .on("start.zoom", onStartZoom)
-      .on("zoom", () => {
-        const { x, y, k } = event.transform;
-        onZoom({ x, y, zoom: k });
+      .on("start.zoom", () => {
+        const { onStartZoom } = callbacksRef.current;
+        if (onStartZoom != null) onStartZoom();
       })
-      .on("end.zoom", onEndZoom);
+      .on("zoom", () => {
+        const { onZoom } = callbacksRef.current;
+        if (onZoom != null) {
+          const { x, y, k } = event.transform;
+          onZoom({ x, y, zoom: k });
+        }
+      })
+      .on("end.zoom", () => {
+        const { onEndZoom } = callbacksRef.current;
+        if (onEndZoom != null) onEndZoom();
+      });
     selectionRef.current.call(zoomRef.current);
 
     return () => {

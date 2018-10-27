@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { tween } from "popmotion";
 import useCanvasDrawer from "./useCanvasDrawer";
 import usePopmotionD3Zoom from "./usePopmotionD3Zoom";
+import useGlobalKeyboardShortcut from "./useGlobalKeyboardShortcut";
 import drawMap from "./drawMap";
 import zoomFromCentre from "./zoomFromCentre";
 
@@ -34,6 +35,10 @@ export default () => {
       to: { x: 0, y: 0, zoom: 1 }
     }).start(coordinates);
   }, []);
+
+  useGlobalKeyboardShortcut("=", () => zoom(1.5));
+  useGlobalKeyboardShortcut("-", () => zoom(1 / 1.5));
+  useGlobalKeyboardShortcut("0", resetZoom);
 
   return (
     <React.Fragment>
