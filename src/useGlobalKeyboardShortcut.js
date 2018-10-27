@@ -3,10 +3,12 @@ import { useRef, useEffect } from "react";
 const shortcuts = [];
 
 const eventHandler = e => {
-  const shortcut = shortcuts.find(
-    s => s.key === e.key && s.shiftKey === e.shiftKey && s.ctrlKey === e.ctrlKey
-  );
-  if (shortcut) shortcut.handler();
+  shortcuts.forEach(s => {
+    const activated =
+      s.key === e.key && s.shiftKey === e.shiftKey && s.ctrlKey === e.ctrlKey;
+
+    if (activated) s.handler();
+  });
 };
 
 let hasListener = false;

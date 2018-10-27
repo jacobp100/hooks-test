@@ -1,43 +1,24 @@
-import React, { useState, useRef } from "react";
-import Canvas from "./Canvas";
+import React, { useReducer } from "react";
 import Button from "./Button";
-import useCanvasDrawer from "./useCanvasDrawer";
-import usePopmotionD3Zoom from "./usePopmotionD3Zoom";
-import usePopmotionOutput from "./usePopmotionOutput";
-import useZoomHandlers from "./useZoomHandlers";
-import useGlobalKeyboardShortcut from "./useGlobalKeyboardShortcut";
-import drawMap from "./drawMap";
+import GraphView from "./GraphView";
 
-const viewport = {
-  width: 500,
-  height: 500,
-  scale: window.devicePixelRatio
-};
+const updater = (current, by) => Math.max(current + by, 0);
 
+// This is really just to demonstrate there's no global state, and that you can
+// have multiple graph views
 export default () => {
-  const ref = useRef(null);
-  const [color, setColor] = useState("black");
-
-  const updateCanvas = useCanvasDrawer(ref, drawMap, viewport, color);
-  const coordinates = usePopmotionD3Zoom(ref);
-  usePopmotionOutput(coordinates, updateCanvas);
-  const { zoomIn, zoomOut, resetZoom } = useZoomHandlers(viewport, coordinates);
-
-  useGlobalKeyboardShortcut("=", zoomIn);
-  useGlobalKeyboardShortcut("-", zoomOut);
-  useGlobalKeyboardShortcut("0", resetZoom);
+  const [numGraphViews, incrementGraphViewBy] = useReducer(updater, 1);
 
   return (
-    <React.Fragment>
-      <Canvas ref={ref} viewport={viewport} />
-      <Button onClick={zoomIn} title="Zoom In" />
-      <Button onClick={zoomOut} title="Zoom Out" />
-      <Button onClick={resetZoom} title="Reset Zoom" />
-      <br />
-      <Button onClick={() => setColor("red")} title="Red" />
-      <Button onClick={() => setColor("green")} title="Green" />
-      <Button onClick={() => setColor("blue")} title="Blue" />
-      <Button onClick={() => setColor("black")} title="Black" />
-    </React.Fragment>
+    <>
+      {Array.from({ length: numGraphViews }, (_, i) => (
+        <GraphView key={i} />
+      ))}
+      <Button onClick={() => incrementGraphViewBy(1)} title="Add Graph View" />
+      <Button
+        onClick={() => incrementGraphViewBy(-1)}
+        title="Remove Graph View"
+      />
+    </>
   );
 };
