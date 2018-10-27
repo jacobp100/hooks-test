@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
-import { selection, event } from "d3-selection";
+import { select, event } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
 
 const noop = () => {};
@@ -12,7 +12,7 @@ export default (
   const zoomRef = useRef(null);
 
   useEffect(() => {
-    selectionRef.current = selection(ref.current);
+    selectionRef.current = select(ref.current);
     zoomRef.current = zoom()
       .on("start.zoom", onStartZoom)
       .on("zoom", () => {
