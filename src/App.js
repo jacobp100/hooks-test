@@ -1,75 +1,41 @@
-import React, { useState, useRef, useCallback } from "react";
-import { tween } from "popmotion";
+import React, { useState, useRef } from "react";
+import Canvas from "./Canvas";
+import Button from "./Button";
 import useCanvasDrawer from "./useCanvasDrawer";
 import usePopmotionD3Zoom from "./usePopmotionD3Zoom";
+import useZoomHandlers from "./useZoomHandlers";
 import useGlobalKeyboardShortcut from "./useGlobalKeyboardShortcut";
 import drawMap from "./drawMap";
-import zoomFromCentre from "./zoomFromCentre";
 
-const width = 500;
-const height = 500;
-const scale = window.devicePixelRatio;
+const viewport = {
+  width: 500,
+  height: 500,
+  scale: window.devicePixelRatio
+};
 
 export default () => {
   const ref = useRef(null);
   const [color, setColor] = useState("black");
 
-  const updateCanvas = useCanvasDrawer(ref, drawMap, {
-    color,
-    width,
-    height,
-    scale
-  });
+  const updateCanvas = useCanvasDrawer(ref, drawMap, viewport, color);
   const coordinates = usePopmotionD3Zoom(ref, updateCanvas);
+  const { zoomIn, zoomOut, resetZoom } = useZoomHandlers(viewport, coordinates);
 
-  const zoom = useCallback(scale => {
-    tween({
-      from: coordinates.get(),
-      to: zoomFromCentre(width, height, scale, coordinates)
-    }).start(coordinates);
-  }, []);
-
-  const resetZoom = useCallback(() => {
-    tween({
-      from: coordinates.get(),
-      to: { x: 0, y: 0, zoom: 1 }
-    }).start(coordinates);
-  }, []);
-
-  useGlobalKeyboardShortcut("=", () => zoom(1.5));
-  useGlobalKeyboardShortcut("-", () => zoom(1 / 1.5));
+  useGlobalKeyboardShortcut("=", zoomIn);
+  useGlobalKeyboardShortcut("-", zoomOut);
   useGlobalKeyboardShortcut("0", resetZoom);
 
   return (
     <React.Fragment>
-      <canvas
-        ref={ref}
-        style={{ display: "block", width, height }}
-        width={width * scale}
-        height={height * scale}
-      />
-      <button type="button" onClick={() => zoom(1.5)}>
-        Zoom In
-      </button>
-      <button type="button" onClick={() => zoom(1 / 1.5)}>
-        Zoom Out
-      </button>
-      <button type="button" onClick={resetZoom}>
-        Reset Zoom
-      </button>
+      <Canvas ref={ref} viewport={viewport} />
+      <Button onClick={zoomIn} title="Zoom In" />
+      <Button onClick={zoomOut} title="Zoom Out" />
+      <Button onClick={resetZoom} title="Reset Zoom" />
       <br />
-      <button type="button" onClick={() => setColor("red")}>
-        Red
-      </button>
-      <button type="button" onClick={() => setColor("green")}>
-        Green
-      </button>
-      <button type="button" onClick={() => setColor("blue")}>
-        Blue
-      </button>
-      <button type="button" onClick={() => setColor("black")}>
-        Black
-      </button>
+      <Button onClick={() => setColor("red")} title="Red" />
+      <Button onClick={() => setColor("green")} title="Green" />
+      <Button onClick={() => setColor("blue")} title="Blue" />
+      <Button onClick={() => setColor("black")} title="Black" />
     </React.Fragment>
   );
 };

@@ -1,6 +1,6 @@
 import { range } from "d3";
 
-export default (ctx, { color }) => {
+export default (ctx, color) => {
   ctx.fillStyle = color;
   drawPoints(ctx);
 };
