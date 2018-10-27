@@ -10,6 +10,8 @@ I thought it would be cool to share to share concepts on how to compose use dire
 
 Note I didn't put dragging in, but it seems like it'd scale somewhat well if I did.
 
+If you want to read about how I found it, I replied in the RFC over [here](https://github.com/reactjs/rfcs/pull/68#issuecomment-433640113).
+
 Initialized with Create React App (run `npm start` to begin).
 
 ![Screenshot](https://github.com/jacobp100/hooks-test/blob/master/example.png?raw=true)
