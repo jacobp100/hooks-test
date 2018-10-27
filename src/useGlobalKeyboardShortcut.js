@@ -34,7 +34,7 @@ export default (key, handler, { shiftKey = false, ctrlKey = false } = {}) => {
       if (index !== -1) shortcuts.splice(index, 1);
       updateListerIfNeeded();
     };
-  });
+  }, []);
 
   useEffect(
     () => {

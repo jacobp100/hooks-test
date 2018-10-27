@@ -3,6 +3,7 @@ import Canvas from "./Canvas";
 import Button from "./Button";
 import useCanvasDrawer from "./useCanvasDrawer";
 import usePopmotionD3Zoom from "./usePopmotionD3Zoom";
+import usePopmotionOutput from "./usePopmotionOutput";
 import useZoomHandlers from "./useZoomHandlers";
 import useGlobalKeyboardShortcut from "./useGlobalKeyboardShortcut";
 import drawMap from "./drawMap";
@@ -18,7 +19,8 @@ export default () => {
   const [color, setColor] = useState("black");
 
   const updateCanvas = useCanvasDrawer(ref, drawMap, viewport, color);
-  const coordinates = usePopmotionD3Zoom(ref, updateCanvas);
+  const coordinates = usePopmotionD3Zoom(ref);
+  usePopmotionOutput(coordinates, updateCanvas);
   const { zoomIn, zoomOut, resetZoom } = useZoomHandlers(viewport, coordinates);
 
   useGlobalKeyboardShortcut("=", zoomIn);

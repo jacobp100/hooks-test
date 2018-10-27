@@ -1,23 +1,23 @@
-import { useRef, useCallback } from "react";
+import { useRef } from "react";
 import { tween } from "popmotion";
 import zoomFromCentre from "./zoomFromCentre";
 
 const createApi = (viewportRef, coordinatesRef) => {
-  const zoomBy = useCallback(scale => {
+  const zoomBy = scale => {
     tween({
       from: coordinatesRef.current.get(),
       to: zoomFromCentre(viewportRef.current, scale, coordinatesRef.current)
     }).start(coordinatesRef.current);
-  }, []);
-  const zoomIn = useCallback(() => zoomBy(1.5), []);
-  const zoomOut = useCallback(() => zoomBy(1 / 1.5), []);
+  };
+  const zoomIn = () => zoomBy(1.5);
+  const zoomOut = () => zoomBy(1 / 1.5);
 
-  const resetZoom = useCallback(() => {
+  const resetZoom = () => {
     tween({
       from: coordinatesRef.current.get(),
       to: { x: 0, y: 0, zoom: 1 }
     }).start(coordinatesRef.current);
-  }, []);
+  };
 
   return { zoomBy, zoomIn, zoomOut, resetZoom };
 };
