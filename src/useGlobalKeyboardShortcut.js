@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 
 const shortcuts = [];
 
@@ -23,29 +23,29 @@ const updateListerIfNeeded = () => {
   }
 };
 
+const createEmptyMutableObject = () => ({});
+
 export default (key, handler, { shiftKey = false, ctrlKey = false } = {}) => {
-  const ref = useRef(null);
-  ref.current = { key, handler, shiftKey, ctrlKey };
-
-  useEffect(() => {
-    shortcuts.push(ref.current);
-    updateListerIfNeeded();
-
-    return () => {
-      const index = shortcuts.indexOf(ref.current);
-      if (index !== -1) shortcuts.splice(index, 1);
-      updateListerIfNeeded();
-    };
-  }, []);
+  const shortcut = useMemo(createEmptyMutableObject);
 
   useEffect(
     () => {
-      const shortcut = ref.current;
       shortcut.key = key;
       shortcut.handler = handler;
       shortcut.shiftKey = shiftKey;
       shortcut.ctrlKey = ctrlKey;
     },
-    [key, handler, shiftKey, ctrlKey]
+    [shortcut, key, handler, shiftKey, ctrlKey]
   );
+
+  useEffect(() => {
+    shortcuts.push(shortcut);
+    updateListerIfNeeded();
+
+    return () => {
+      const index = shortcuts.indexOf(shortcut);
+      if (index !== -1) shortcuts.splice(index, 1);
+      updateListerIfNeeded();
+    };
+  }, []);
 };

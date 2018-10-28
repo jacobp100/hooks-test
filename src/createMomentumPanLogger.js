@@ -1,9 +1,7 @@
-import { useRef } from "react";
-
 const historyMs = 50;
 const minHistoryMs = 30;
 
-const createApi = beginPanRef => {
+export default () => {
   const pointHistory = []; // Never changes, all mutations
 
   const removeOldHistory = t => {
@@ -15,7 +13,7 @@ const createApi = beginPanRef => {
   };
 
   return {
-    start() {
+    reset() {
       pointHistory.length = 0;
     },
     addPoint({ x, y, zoom }) {
@@ -27,7 +25,7 @@ const createApi = beginPanRef => {
       }
       pointHistory.push({ x, y, zoom, t });
     },
-    end() {
+    finalize() {
       const t = Date.now();
       removeOldHistory(t);
       const totalT = pointHistory.length > 0 ? t - pointHistory[0].t : 0;
@@ -36,25 +34,12 @@ const createApi = beginPanRef => {
         const lastPoint = pointHistory[pointHistory.length - 1];
         const xVelocity = (1000 * (lastPoint.x - firstPoint.x)) / totalT;
         const yVelocity = (1000 * (lastPoint.y - firstPoint.y)) / totalT;
-        beginPanRef.current({ xVelocity, yVelocity });
+        pointHistory.length = 0;
+        return { x: xVelocity, y: yVelocity };
       }
+
       pointHistory.length = 0;
+      return null;
     }
   };
-};
-
-export default beginPan => {
-  /*
-  Ensure we keep pan history even if the pan handler changes. See useD3Zoom for
-  more information. This is a correctness issue, not performance.
-  */
-  const beginPanRef = useRef(null);
-  beginPanRef.current = beginPan;
-
-  const api = useRef(null);
-  if (api.current == null) {
-    api.current = createApi(beginPanRef);
-  }
-
-  return api.current;
 };

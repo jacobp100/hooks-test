@@ -1,38 +1,19 @@
-import { useRef, useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { value, physics } from "popmotion";
 import usePopmotionOutput from "./usePopmotionOutput";
 import useD3Zoom from "./useD3Zoom";
-import useMomentumPanning from "./useMomentumPanning";
+import createMomentumPanLogger from "./createMomentumPanLogger";
+
+const createInitialValue = () => value({ x: 0, y: 0, zoom: 1 });
 
 export default ref => {
-  const coordinatesRef = useRef(null);
-  if (coordinatesRef.current === null) {
-    coordinatesRef.current = value({
-      x: 0,
-      y: 0,
-      zoom: 1
-    });
-  }
-  // Never changes
-  const coordinates = coordinatesRef.current;
-
-  const runPanAnimation = useCallback(
-    ({ xVelocity, yVelocity }) => {
-      physics({
-        from: coordinates.get(),
-        velocity: { x: xVelocity, y: yVelocity, zoom: 0 },
-        friction: 0.3
-      }).start(coordinates);
-    },
-    [coordinates]
-  );
-
-  const momentumPanning = useMomentumPanning(runPanAnimation);
+  const coordinates = useMemo(createInitialValue);
+  const momentumPanning = useMemo(createMomentumPanLogger);
 
   const onStartZoom = useCallback(
     () => {
       coordinates.stop();
-      momentumPanning.start();
+      momentumPanning.reset();
     },
     [coordinates, momentumPanning]
   );
@@ -46,7 +27,14 @@ export default ref => {
   );
   const onEndZoom = useCallback(
     () => {
-      momentumPanning.end();
+      const velocity = momentumPanning.finalize();
+      if (velocity != null) {
+        physics({
+          from: coordinates.get(),
+          velocity: { x: velocity.x, y: velocity.y, zoom: 0 },
+          friction: 0.3
+        }).start(coordinates);
+      }
     },
     [coordinates, momentumPanning]
   );

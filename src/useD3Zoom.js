@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { select, event } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
+import useRefValue from "./useRefValue";
 
 export default (ref, callbacks) => {
   /*
@@ -15,9 +16,7 @@ export default (ref, callbacks) => {
   and then calls it. The instance properties are then passed to the native code
   component rather than the callback in the props.
   */
-  const callbacksRef = useRef(null);
-  callbacksRef.current = callbacks;
-
+  const callbacksRef = useRefValue(callbacks);
   const selectionRef = useRef(null);
 
   useEffect(

@@ -1,5 +1,6 @@
-import { useRef } from "react";
+import { useMemo } from "react";
 import { tween } from "popmotion";
+import useRefValue from "./useRefValue";
 import zoomFromCentre from "./zoomFromCentre";
 
 const createApi = (viewportRef, coordinatesRef) => {
@@ -23,15 +24,12 @@ const createApi = (viewportRef, coordinatesRef) => {
 };
 
 export default (viewport, coordinates) => {
-  const viewportRef = useRef(null);
-  viewportRef.current = viewport;
-  const coordinatesRef = useRef(null);
-  coordinatesRef.current = coordinates;
+  const viewportRef = useRefValue(viewport);
+  const coordinatesRef = useRefValue(coordinates);
+  const api = useMemo(() => createApi(viewportRef, coordinatesRef), [
+    viewportRef,
+    coordinatesRef
+  ]);
 
-  const apiRef = useRef(null);
-  if (apiRef.current == null) {
-    apiRef.current = createApi(viewportRef, coordinatesRef);
-  }
-
-  return apiRef.current;
+  return api;
 };

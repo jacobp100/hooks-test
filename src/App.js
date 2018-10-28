@@ -11,14 +11,14 @@ export default () => {
 
   return (
     <>
-      {Array.from({ length: numGraphViews }, (_, i) => (
-        <GraphView key={i} />
-      ))}
       <Button onClick={() => incrementGraphViewBy(1)} title="Add Graph View" />
       <Button
         onClick={() => incrementGraphViewBy(-1)}
         title="Remove Graph View"
       />
+      {Array.from({ length: numGraphViews }, (_, i) => (
+        <GraphView key={i} />
+      ))}
     </>
   );
 };
