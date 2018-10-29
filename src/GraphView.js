@@ -1,12 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import Canvas from "./Canvas";
 import Button from "./Button";
+import useTreeLayoutWithAnimation from "./useTreeLayoutWithAnimation";
 import useCanvasDrawer from "./useCanvasDrawer";
-import usePopmotionD3Zoom from "./usePopmotionD3Zoom";
-import usePopmotionOutput from "./usePopmotionOutput";
-import useZoomHandlers from "./useZoomHandlers";
+import usePanAndZoomWithObjectDetection from "./usePanAndZoomWithObjectDetection";
+import useZoomHandlersWithTreeLayout from "./useZoomHandlersWithTreeLayout";
 import useGlobalKeyboardShortcut from "./useGlobalKeyboardShortcut";
-import drawMap from "./drawMap";
+import drawGraph from "./drawGraph";
+import useStore from "./useStore";
 
 const viewport = {
   width: 500,
@@ -16,28 +17,45 @@ const viewport = {
 
 export default () => {
   const ref = useRef(null);
-  const [color, setColor] = useState("black");
+  const { state, setSelected, clearSelected, addChildToSelected } = useStore();
+  const { selected, nodes } = state;
 
-  const updateCanvas = useCanvasDrawer(ref, drawMap, viewport, color);
-  const coordinates = usePopmotionD3Zoom(ref);
-  usePopmotionOutput(coordinates, updateCanvas);
-  const { zoomIn, zoomOut, resetZoom } = useZoomHandlers(viewport, coordinates);
+  const { root, nodeAtPoint, t } = useTreeLayoutWithAnimation(nodes);
+  const canvasOrigin = usePanAndZoomWithObjectDetection(ref, {
+    objectAtPoint: nodeAtPoint,
+    onSelect: setSelected,
+    onBackgroundClicked: clearSelected
+  });
+  const { zoomIn, zoomOut, resetZoom } = useZoomHandlersWithTreeLayout(
+    root,
+    viewport,
+    canvasOrigin
+  );
+
+  const canvasState = { selected, root };
+  useCanvasDrawer(ref, drawGraph, viewport, canvasState, canvasOrigin, t);
 
   useGlobalKeyboardShortcut("=", zoomIn);
   useGlobalKeyboardShortcut("-", zoomOut);
   useGlobalKeyboardShortcut("0", resetZoom);
+
+  useEffect(() => resetZoom({ animated: false }), []);
 
   return (
     <div>
       <Canvas ref={ref} viewport={viewport} />
       <Button onClick={zoomIn} title="Zoom In" />
       <Button onClick={zoomOut} title="Zoom Out" />
-      <Button onClick={resetZoom} title="Reset Zoom" />
+      <Button onClick={resetZoom} title="Zoom to Fit" />
       <br />
-      <Button onClick={() => setColor("red")} title="Red" />
-      <Button onClick={() => setColor("green")} title="Green" />
-      <Button onClick={() => setColor("blue")} title="Blue" />
-      <Button onClick={() => setColor("black")} title="Black" />
+      {selected != null ? (
+        <>
+          <span>{selected}</span>
+          <Button onClick={addChildToSelected} title="Add Child" />
+        </>
+      ) : (
+        <span>No node selected</span>
+      )}
     </div>
   );
 };

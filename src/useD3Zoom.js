@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { select, event } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
 import useRefValue from "./useRefValue";
@@ -23,20 +23,21 @@ export default (ref, callbacks) => {
     () => {
       selectionRef.current = select(ref.current);
       const z = zoom()
+        .filter(() => {
+          const { filter } = callbacksRef.current;
+          return filter ? filter(event) : true;
+        })
         .on("start.zoom", () => {
           const { onStartZoom } = callbacksRef.current;
-          if (onStartZoom != null) onStartZoom();
+          if (onStartZoom != null) onStartZoom(event);
         })
         .on("zoom", () => {
           const { onZoom } = callbacksRef.current;
-          if (onZoom != null) {
-            const { x, y, k } = event.transform;
-            onZoom({ x, y, zoom: k });
-          }
+          if (onZoom != null) onZoom(event);
         })
         .on("end.zoom", () => {
           const { onEndZoom } = callbacksRef.current;
-          if (onEndZoom != null) onEndZoom();
+          if (onEndZoom != null) onEndZoom(event);
         });
       selectionRef.current.call(z);
 
@@ -47,15 +48,17 @@ export default (ref, callbacks) => {
     [ref, selectionRef, callbacksRef]
   );
 
-  const setZoom = useCallback(
-    ({ x, y, zoom }) => {
-      selectionRef.current.property(
-        "__zoom",
-        zoomIdentity.translate(x, y).scale(zoom)
-      );
-    },
+  const api = useMemo(
+    () => ({
+      setTransform({ x, y, zoom }) {
+        selectionRef.current.property(
+          "__zoom",
+          zoomIdentity.translate(x, y).scale(zoom)
+        );
+      }
+    }),
     [selectionRef]
   );
 
-  return setZoom;
+  return api;
 };
