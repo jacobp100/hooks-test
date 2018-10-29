@@ -1,11 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import Canvas from "./Canvas";
 import Button from "./Button";
 import useTreeLayoutWithAnimation from "./useTreeLayoutWithAnimation";
 import useCanvasDrawer from "./useCanvasDrawer";
 import usePanAndZoomWithObjectDetection from "./usePanAndZoomWithObjectDetection";
 import useZoomHandlersWithTreeLayout from "./useZoomHandlersWithTreeLayout";
-import useGlobalKeyboardShortcut from "./useGlobalKeyboardShortcut";
+import useZoomKeyboardShortcuts from "./useZoomKeyboardShortcuts";
+import useZoomResetOnMount from "./useZoomResetOnMount";
 import drawGraph from "./drawGraph";
 import useStore from "./useStore";
 
@@ -26,27 +27,20 @@ export default () => {
     onSelect: setSelected,
     onBackgroundClicked: clearSelected
   });
-  const { zoomIn, zoomOut, resetZoom } = useZoomHandlersWithTreeLayout(
-    root,
-    viewport,
-    canvasOrigin
-  );
+  const zoomState = { root, viewport, canvasOrigin };
+  const zoomHandlers = useZoomHandlersWithTreeLayout(zoomState);
+  useZoomKeyboardShortcuts(zoomHandlers);
+  useZoomResetOnMount(zoomHandlers);
 
   const canvasState = { selected, root };
   useCanvasDrawer(ref, drawGraph, viewport, canvasState, canvasOrigin, t);
 
-  useGlobalKeyboardShortcut("=", zoomIn);
-  useGlobalKeyboardShortcut("-", zoomOut);
-  useGlobalKeyboardShortcut("0", resetZoom);
-
-  useEffect(() => resetZoom({ animated: false }), []);
-
   return (
     <div>
       <Canvas ref={ref} viewport={viewport} />
-      <Button onClick={zoomIn} title="Zoom In" />
-      <Button onClick={zoomOut} title="Zoom Out" />
-      <Button onClick={resetZoom} title="Zoom to Fit" />
+      <Button onClick={zoomHandlers.zoomIn} title="Zoom In" />
+      <Button onClick={zoomHandlers.zoomOut} title="Zoom Out" />
+      <Button onClick={zoomHandlers.resetZoom} title="Zoom to Fit" />
       <br />
       {selected != null ? (
         <>
