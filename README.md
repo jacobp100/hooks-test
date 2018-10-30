@@ -6,7 +6,7 @@ One of my companies had an app made with React, but part of that was a canvas. T
 - Pan and zoom
 - Momentum when panning (aka slippy maps, depends on above)
 - Layout animations
-- Coordinating layout animations with map position
+- Coordinating layout animations with map position (keep the current node in the same position when the layout changes)
 - Drag and drop between all combinations of the canvas and React
 
 Using component composition, I was able to split the logic into a few components parts: a component that handled panning and zooming, a component that drew on a canvas, a keyboard event handler component. However, I was unable to split it much further, and the first two components were about 1k lines each, as they had to handle so much.
