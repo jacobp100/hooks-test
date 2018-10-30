@@ -1,6 +1,6 @@
 import { useReducer, useCallback } from "react";
 
-export default (store) => {
+export default store => {
   const [state, dispatch] = useReducer(store.reducer, store.defaultState);
 
   const setSelected = useCallback(id => dispatch(store.setSelected(id)), [

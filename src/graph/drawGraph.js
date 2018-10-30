@@ -1,7 +1,5 @@
 import { linkVertical } from "d3";
-
-const getX = (d, t) => d.x + (d.xPrev - d.x) * (1 - t);
-const getY = (d, t) => d.y + (d.yPrev - d.y) * (1 - t);
+import { getX, getY } from "./treeLayout";
 
 const drawLink = linkVertical()
   .x(getX)

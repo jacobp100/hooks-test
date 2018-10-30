@@ -9,9 +9,12 @@ export const getCanvasCoordinatesForEvent = e => {
   }
 };
 
-export const canvasCoordsToGraphCoords = (canvasOrigin, { x, y }) => {
-  return {
-    x: (x - canvasOrigin.x) / canvasOrigin.zoom,
-    y: (y - canvasOrigin.y) / canvasOrigin.zoom
-  };
-};
+export const canvasCoordsToGraphCoords = (canvasOrigin, { x, y }) => ({
+  x: (x - canvasOrigin.x) / canvasOrigin.zoom,
+  y: (y - canvasOrigin.y) / canvasOrigin.zoom
+});
+
+export const graphCoordsToCanvasCoords = (canvasOrigin, { x, y }) => ({
+  x: x * canvasOrigin.zoom + canvasOrigin.x,
+  y: y * canvasOrigin.zoom + canvasOrigin.y
+});

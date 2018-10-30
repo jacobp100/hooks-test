@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from "react";
 import useGlobalKeyboardShortcut from "../../hooks/useGlobalKeyboardShortcut";
 import { getCanvasCoordinatesForEvent } from "../../graph/canvasUtil";
 
-export default (ref) => {
+export default ref => {
   const [selectionRectangle, setSelectionRectangle] = useState(null);
   const needsSelectionListeners = selectionRectangle != null;
 

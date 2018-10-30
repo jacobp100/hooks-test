@@ -1,6 +1,13 @@
 A somewhat complicated use case solved relatively nicely with React Hooks.
 
-One of my companies had an app made with React, but part of that was a canvas. The canvas was very complicated, and was essentially its own app. The main parts of complexity were drag and zoom on the canvas; momentum when panning (aka slippy maps); drag and drop between the canvas and React, canvas and canvas, React and React; React state influencing the canvas; and keyboard handlers.
+One of my companies had an app made with React, but part of that was a canvas. The canvas was very complicated, and was essentially its own app. The main parts of complexity were:
+
+- Keyboard handlers.
+- Pan and zoom
+- Momentum when panning (aka slippy maps, depends on above)
+- Layout animations
+- Coordinating layout animations with map position
+- Drag and drop between all combinations of the canvas and React
 
 Using component composition, I was able to split the logic into a few components parts: a component that handled panning and zooming, a component that drew on a canvas, a keyboard event handler component. However, I was unable to split it much further, and the first two components were about 1k lines each, as they had to handle so much.
 
@@ -8,7 +15,7 @@ So I tried again with hooks! It's. So. Much. Simpler.
 
 I thought it would be cool to share to share concepts on how to compose use directives to achieve something like this.
 
-Note I didn't put dragging in, but it seems like it'd scale somewhat well if I did.
+I got all but drag and drop implemented here. I didn't do D&D because it used React-DND, which is a HOC and not hooks.
 
 If you want to read about how I found it, I replied in the RFC over [here](https://github.com/reactjs/rfcs/pull/68#issuecomment-433640113).
 

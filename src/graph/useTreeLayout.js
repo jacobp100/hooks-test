@@ -2,49 +2,61 @@ import { useRef, useMemo, useCallback } from "react";
 import { layoutTree } from "./treeLayout";
 
 const applyPreviousCoords = (previous, next) => {
-  const idMap = new Map();
-  previous.each(d => {
-    idMap.set(d.data.id, d);
-  });
-
   const findParentInPreviousTree = start => {
-    let d = start;
+    let d = start.parent;
     while (d != null) {
-      d = d.parent;
-      if (d != null && idMap.has(d.data.id)) {
+      if (previous.idMap.has(d.data.id)) {
         return d;
       }
+      d = d.parent;
     }
     return null;
   };
 
-  next.each(d => {
-    const previousD = idMap.get(d.data.id);
+  const addedNodes = [];
+  next.idMap.forEach((d, id) => {
+    const previousD = previous.idMap.get(id);
     if (previousD != null) {
       d.xPrev = previousD.x;
       d.yPrev = previousD.y;
       return;
     }
 
+    addedNodes.push(id);
+
     const prevParent = findParentInPreviousTree(d);
     if (prevParent != null) {
-      d.xPrev = prevParent.x;
-      d.yPrev = prevParent.y;
+      d.xPrev = prevParent.xPrev;
+      d.yPrev = prevParent.yPrev;
     }
   });
+
+  const removedNodes = Array.from(previous.idMap.keys()).filter(
+    id => !next.idMap.has(id)
+  );
+
+  return { addedNodes, removedNodes };
 };
 
 export default nodes => {
-  const previousRef = useRef(null);
+  const previousLayoutRef = useRef(null);
 
-  const root = useMemo(() => layoutTree(nodes), [nodes]);
-  const didLayout = root !== previousRef.current;
+  const layout = useMemo(() => layoutTree(nodes), [nodes]);
+  const didLayout = layout !== previousLayoutRef.current;
 
-  if (didLayout && previousRef.current != null) {
-    applyPreviousCoords(previousRef.current, root);
+  let addedNodes;
+  let removedNodes;
+  if (didLayout && previousLayoutRef.current != null) {
+    const out = applyPreviousCoords(previousLayoutRef.current, layout);
+    addedNodes = out.addedNodes;
+    removedNodes = out.removedNodes;
+  } else {
+    addedNodes = [];
+    removedNodes = [];
   }
-  previousRef.current = root;
+  previousLayoutRef.current = layout;
 
+  const { root, idMap } = layout;
   const nodeAtPoint = useCallback(
     ({ x, y }) => {
       const node = root
@@ -52,8 +64,8 @@ export default nodes => {
         .find(d => Math.hypot(d.x - x, d.y - y) <= 5);
       return node != null ? node.data.id : null;
     },
-    [root]
+    [layout]
   );
 
-  return { root, nodeAtPoint, didLayout };
+  return { root, idMap, nodeAtPoint, addedNodes, removedNodes };
 };

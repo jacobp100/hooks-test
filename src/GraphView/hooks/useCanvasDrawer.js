@@ -25,7 +25,7 @@ export default (ref, draw, viewport, params, canvasOrigin, t) => {
   const mergedValues = useMemo(() => mergeValues(canvasOrigin, t), [
     canvasOrigin,
     t
-  ])
+  ]);
   useValueOutput(mergedValues, render);
 
   useEffect(() => {
