@@ -1,7 +1,7 @@
 import { useRef, useMemo, useEffect } from "react";
 import { select, event } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
-import useRefValue from "./useRefValue";
+import useRefValue from "../hooks/useRefValue";
 
 export default (ref, callbacks) => {
   /*

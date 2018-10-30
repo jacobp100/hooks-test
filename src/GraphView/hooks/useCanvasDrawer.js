@@ -1,6 +1,7 @@
-import { useEffect, useCallback } from "react";
-import useRefValue from "./useRefValue";
-import mergeValues from "./mergeValues";
+import { useEffect, useMemo, useCallback } from "react";
+import useRefValue from "../../hooks/useRefValue";
+import { useValueOutput } from "../../animation/usePopmotionOutput";
+import mergeValues from "../../animation/mergeValues";
 
 const resetCanvas = (ctx, { width, height, scale }, { x, y, zoom }) => {
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
@@ -21,10 +22,11 @@ export default (ref, draw, viewport, params, canvasOrigin, t) => {
     [viewportRef, paramsRef]
   );
 
-  useEffect(() => mergeValues(canvasOrigin, t).start(render).stop, [
+  const mergedValues = useMemo(() => mergeValues(canvasOrigin, t), [
     canvasOrigin,
     t
-  ]);
+  ])
+  useValueOutput(mergedValues, render);
 
   useEffect(() => {
     render([canvasOrigin.get(), t.get()]);

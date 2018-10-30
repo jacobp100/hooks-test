@@ -1,4 +1,4 @@
-import useGlobalKeyboardShortcut from "./useGlobalKeyboardShortcut";
+import useGlobalKeyboardShortcut from "../../hooks/useGlobalKeyboardShortcut";
 
 export default zoomHandlers => {
   useGlobalKeyboardShortcut("=", zoomHandlers.zoomIn);

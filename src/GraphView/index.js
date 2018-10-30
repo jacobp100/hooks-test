@@ -1,14 +1,15 @@
 import React, { useRef } from "react";
-import Canvas from "./Canvas";
-import Button from "./Button";
-import useTreeLayoutWithAnimation from "./useTreeLayoutWithAnimation";
-import useCanvasDrawer from "./useCanvasDrawer";
-import usePanAndZoomWithObjectDetection from "./usePanAndZoomWithObjectDetection";
-import useZoomHandlersWithTreeLayout from "./useZoomHandlersWithTreeLayout";
-import useZoomKeyboardShortcuts from "./useZoomKeyboardShortcuts";
-import useZoomResetOnMount from "./useZoomResetOnMount";
-import drawGraph from "./drawGraph";
-import useStore from "./useStore";
+import Canvas from "../Canvas";
+import Button from "../Button";
+import useStore from "../hooks/useStore";
+import drawGraph from "../graph/drawGraph";
+import useTreeLayoutWithAnimation from "./hooks/useTreeLayoutWithAnimation";
+import useCanvasDrawer from "./hooks/useCanvasDrawer";
+import useGestureHandlers from "./hooks/useGestureHandlers";
+import useZoomHandlersWithTreeLayout from "./hooks/useZoomHandlersWithTreeLayout";
+import useZoomKeyboardShortcuts from "./hooks/useZoomKeyboardShortcuts";
+import useZoomResetOnMount from "./hooks/useZoomResetOnMount";
+import * as store from "./store";
 
 const viewport = {
   width: 500,
@@ -18,11 +19,11 @@ const viewport = {
 
 export default () => {
   const ref = useRef(null);
-  const { state, setSelected, clearSelected, addChildToSelected } = useStore();
+  const { state, setSelected, clearSelected, addChildToSelected } = useStore(store);
   const { selected, nodes } = state;
 
   const { root, nodeAtPoint, t } = useTreeLayoutWithAnimation(nodes);
-  const canvasOrigin = usePanAndZoomWithObjectDetection(ref, {
+  const { canvasOrigin } = useGestureHandlers(ref, {
     objectAtPoint: nodeAtPoint,
     onSelect: setSelected,
     onBackgroundClicked: clearSelected

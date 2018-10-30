@@ -2,10 +2,10 @@ export default () => {
   let handledMultipleEvents = false;
 
   return {
-    reset() {
+    begin() {
       handledMultipleEvents = false;
     },
-    addPoint() {
+    update() {
       handledMultipleEvents = true;
     },
     finalize() {

@@ -2,7 +2,7 @@ const historyMs = 50;
 const minHistoryMs = 30;
 
 export default () => {
-  const pointHistory = []; // Never changes, all mutations
+  let pointHistory = [];
 
   const removeOldHistory = t => {
     const minTime = t - historyMs;
@@ -13,10 +13,10 @@ export default () => {
   };
 
   return {
-    reset() {
-      pointHistory.length = 0;
+    begin() {
+      pointHistory = [];
     },
-    addPoint({ x, y, zoom }) {
+    update({ x, y, zoom }) {
       const t = Date.now();
       if (pointHistory.length > 0 && pointHistory[0].zoom !== zoom) {
         pointHistory.length = 0;
@@ -34,11 +34,11 @@ export default () => {
         const lastPoint = pointHistory[pointHistory.length - 1];
         const xVelocity = (1000 * (lastPoint.x - firstPoint.x)) / totalT;
         const yVelocity = (1000 * (lastPoint.y - firstPoint.y)) / totalT;
-        pointHistory.length = 0;
+        pointHistory = null;
         return { x: xVelocity, y: yVelocity };
       }
 
-      pointHistory.length = 0;
+      pointHistory = null;
       return null;
     }
   };

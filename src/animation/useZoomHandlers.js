@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { tween } from "popmotion";
-import useRefValue from "./useRefValue";
-import zoomFromCentre from "./zoomFromCentre";
+import useRefValue from "../hooks/useRefValue";
 
 const createApi = (viewportRef, coordinatesRef) => {
   const setZoom = (to, animated = true) => {
@@ -14,19 +13,25 @@ const createApi = (viewportRef, coordinatesRef) => {
     }
   };
 
-  const zoomBy = (scale, { animated } = {}) =>
-    setZoom(
-      zoomFromCentre(viewportRef.current, scale, coordinatesRef.current),
-      animated
-    );
+  const zoomBy = (scale, { animated } = {}) => {
+    const { width, height } = viewportRef.current;
+    const current = coordinatesRef.current.get();
+    const x = (current.x - width / 2) * scale + width / 2;
+    const y = (current.y - width / 2) * scale + height / 2;
+    const zoom = current.zoom * scale;
+
+    setZoom({ x, y, zoom }, animated);
+  };
   const zoomIn = opts => zoomBy(1.5, opts);
   const zoomOut = opts => zoomBy(1 / 1.5, opts);
 
   const zoomToRect = (rect, { padding = 50, animated } = {}) => {
-    const zoom = Math.min(
-      (viewportRef.current.width - 2 * padding) / rect.width,
-      (viewportRef.current.height - 2 * padding) / rect.height
+    const { width, height } = viewportRef.current;
+    let zoom = Math.min(
+      (width - 2 * padding) / rect.width,
+      (height - 2 * padding) / rect.height
     );
+    if (!isFinite(zoom)) zoom = 1;
     const x = viewportRef.current.width / 2 - (rect.x + rect.width / 2) * zoom;
     const y =
       viewportRef.current.height / 2 - (rect.y + rect.height / 2) * zoom;
