@@ -11,7 +11,7 @@ One of my companies had an app made with React, but part of that was a canvas. T
 
 Using component composition, I was able to split the logic into a few components parts: a component that handled panning and zooming, a component that drew on a canvas, a keyboard event handler component. However, I was unable to split it much further, and the first two components were about 1k lines each, as they had to handle so much.
 
-So I tried again with hooks! It's. So. Much. Simpler.
+So I tried again with hooks! It's. So. Much. Simpler. In total, we're getting close to the previous 1,000 lines of tightly coupled logic. However, each file never goes much above 50 lines, and it is much easier to follow how things fit together.
 
 I thought it would be cool to share to share concepts on how to compose use directives to achieve something like this.
 
