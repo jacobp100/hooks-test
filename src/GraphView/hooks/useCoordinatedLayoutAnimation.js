@@ -23,8 +23,8 @@ export default (
     const animation = tween({ from: 0, to: 1 });
     animation
       .pipe(t => ({
-        x: initialCanvasOrigin.x + -(getX(d, t) * z - initialX),
-        y: initialCanvasOrigin.y + -(getY(d, t) * z - initialY),
+        x: initialCanvasOrigin.x - (getX(d, t) * z - initialX),
+        y: initialCanvasOrigin.y - (getY(d, t) * z - initialY),
         zoom: initialZoom
       }))
       .start(canvasOrigin);

@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useCallback } from "react";
-import useRefValue from "../../hooks/useRefValue";
+import { useMemo, useCallback } from "react";
 import { useValueOutput } from "../../animation/usePopmotionOutput";
 import mergeValues from "../../animation/mergeValues";
 
@@ -10,16 +9,18 @@ const resetCanvas = (ctx, { width, height, scale }, { x, y, zoom }) => {
 };
 
 export default (ref, draw, viewport, params, canvasOrigin, t) => {
-  const viewportRef = useRefValue(viewport);
-  const paramsRef = useRefValue(params);
-
   const render = useCallback(
     ([canvasOriginValue, tValue]) => {
       const ctx = ref.current.getContext("2d");
-      resetCanvas(ctx, viewportRef.current, canvasOriginValue);
-      draw(ctx, paramsRef.current, tValue);
+      resetCanvas(ctx, viewport, canvasOriginValue);
+      draw(ctx, params, tValue);
+      if (params.selectionRectangle) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        const { x, y, width, height } = params.selectionRectangle;
+        ctx.fillRect(x, y, width, height);
+      }
     },
-    [viewportRef, paramsRef]
+    [ref, draw, viewport, params]
   );
 
   const mergedValues = useMemo(() => mergeValues(canvasOrigin, t), [
@@ -27,8 +28,4 @@ export default (ref, draw, viewport, params, canvasOrigin, t) => {
     t
   ]);
   useValueOutput(mergedValues, render);
-
-  useEffect(() => {
-    render([canvasOrigin.get(), t.get()]);
-  });
 };

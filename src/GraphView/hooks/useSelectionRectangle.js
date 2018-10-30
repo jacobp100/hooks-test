@@ -1,54 +1,67 @@
-import { useCallback, useState, useEffect } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import useGlobalKeyboardShortcut from "../../hooks/useGlobalKeyboardShortcut";
-import { getCanvasCoordinatesForEvent } from "../../graph/canvasUtil";
+import {
+  canvasCoordsToGraphCoords,
+  getGraphCoordinatesForEvent
+} from "../../graph/canvasUtil";
 
-export default ref => {
-  const [selectionRectangle, setSelectionRectangle] = useState(null);
-  const needsSelectionListeners = selectionRectangle != null;
+const coordsToSelection = coords =>
+  coords != null
+    ? {
+        x: Math.min(coords.x0, coords.x1),
+        y: Math.min(coords.y0, coords.y1),
+        width: Math.abs(coords.x0 - coords.x1),
+        height: Math.abs(coords.y0 - coords.y1)
+      }
+    : null;
+
+export default (ref, canvasOrigin) => {
+  const [rectangleCoords, setRectangleCoords] = useState(null);
+  const needsSelectionListeners = rectangleCoords != null;
 
   const startSelectionRectangle = useCallback(
     e => {
-      const canvasCoords = getCanvasCoordinatesForEvent(e);
-      if (canvasCoords != null) {
-        const { x, y } = canvasCoords;
-        setSelectionRectangle({ x0: x, y0: y, x1: x, y1: y });
+      const graphCoords = getGraphCoordinatesForEvent(canvasOrigin, e);
+      if (graphCoords != null) {
+        const { x, y } = graphCoords;
+        setRectangleCoords({ x0: x, y0: y, x1: x, y1: y });
       }
     },
-    [setSelectionRectangle]
+    [setRectangleCoords]
   );
 
-  const cancelSelectionRectangle = useCallback(
-    () => setSelectionRectangle(null),
-    [setSelectionRectangle]
-  );
+  const cancelSelectionRectangle = useCallback(() => setRectangleCoords(null), [
+    setRectangleCoords
+  ]);
 
   const updateSelectionRectangle = useCallback(
     e => {
-      const canvasCoords = getCanvasCoordinatesForEvent(e);
-      if (canvasCoords != null) {
-        const { x: x1, y: y1 } = canvasCoords;
-        setSelectionRectangle(
-          s => (s != null ? { x0: s.x0, y0: s.y0, x1, y1 } : null)
-        );
-      }
+      const origin = ref.current.getBoundingClientRect();
+      const canvasCoords = { x: e.pageX - origin.x, y: e.pageY - origin.y };
+      const { x: x1, y: y1 } = canvasCoordsToGraphCoords(
+        canvasOrigin.get(),
+        canvasCoords
+      );
+      setRectangleCoords(
+        s => (s != null ? { x0: s.x0, y0: s.y0, x1, y1 } : null)
+      );
     },
-    [setSelectionRectangle]
+    [setRectangleCoords]
   );
 
   useEffect(
     () => {
       if (needsSelectionListeners) {
-        ref.current.addEventListener("mousemove", updateSelectionRectangle);
-        ref.current.addEventListener("mouseup", cancelSelectionRectangle);
+        document.addEventListener("mousemove", updateSelectionRectangle);
+        document.addEventListener("mouseup", cancelSelectionRectangle);
       }
 
       return () => {
-        ref.current.removeEventListener("mousemove", updateSelectionRectangle);
-        ref.current.removeEventListener("mouseup", cancelSelectionRectangle);
+        document.removeEventListener("mousemove", updateSelectionRectangle);
+        document.removeEventListener("mouseup", cancelSelectionRectangle);
       };
     },
     [
-      ref,
       needsSelectionListeners,
       updateSelectionRectangle,
       cancelSelectionRectangle
@@ -56,6 +69,10 @@ export default ref => {
   );
 
   useGlobalKeyboardShortcut("Escape", cancelSelectionRectangle);
+
+  const selectionRectangle = useMemo(() => coordsToSelection(rectangleCoords), [
+    rectangleCoords
+  ]);
 
   return {
     selectionRectangle,

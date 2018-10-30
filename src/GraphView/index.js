@@ -19,6 +19,9 @@ const viewport = {
   scale: window.devicePixelRatio
 };
 
+// So we can ctrl+click on Mac
+const cancelContextMenu = e => e.preventDefault();
+
 export default () => {
   const ref = useRef(null);
   const { state, setSelected, clearSelected, addChildToSelected } = useStore(
@@ -27,7 +30,7 @@ export default () => {
   const { selected, nodes } = state;
 
   const treeLayout = useTreeLayout(nodes);
-  const { canvasOrigin } = useGestureHandlers(ref, {
+  const { canvasOrigin, selectionRectangle } = useGestureHandlers(ref, {
     objectAtPoint: treeLayout.nodeAtPoint,
     onSelect: setSelected,
     onBackgroundClicked: clearSelected
@@ -43,12 +46,12 @@ export default () => {
     zoomHandlers
   );
 
-  const canvasState = { root: treeLayout.root, selected };
+  const canvasState = { root: treeLayout.root, selected, selectionRectangle };
   useCanvasDrawer(ref, drawGraph, viewport, canvasState, canvasOrigin, t);
 
   return (
     <div>
-      <Canvas ref={ref} viewport={viewport} />
+      <Canvas ref={ref} viewport={viewport} onContextMenu={cancelContextMenu} />
       <ZoomButtons zoomHandlers={zoomHandlers} />
       <br />
       {selected != null ? (
