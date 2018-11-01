@@ -16,8 +16,8 @@ export default (ref, draw, viewport, params, canvasOrigin, t) => {
       draw(ctx, params, tValue);
       if (params.selectionRectangle) {
         ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        const { x, y, width, height } = params.selectionRectangle;
-        ctx.fillRect(x, y, width, height);
+        const { x0, y0, x1, y1 } = params.selectionRectangle;
+        ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
       }
     },
     [ref, draw, viewport, params]

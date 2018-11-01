@@ -67,5 +67,14 @@ export default nodes => {
     [layout]
   );
 
-  return { root, idMap, nodeAtPoint, addedNodes, removedNodes };
+  const nodesInRect = useCallback(
+    ({ x0, y0, x1, y1 }) =>
+      root
+        .descendants()
+        .filter(d => d.x >= x0 && d.x <= x1 && d.y >= y0 && d.y <= y1)
+        .map(d => d.data.id),
+    [layout]
+  );
+
+  return { root, idMap, nodeAtPoint, nodesInRect, addedNodes, removedNodes };
 };

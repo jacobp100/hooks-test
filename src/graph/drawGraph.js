@@ -28,7 +28,7 @@ export default (ctx, { root, selected }, t = 1) => {
   ctx.beginPath();
   root
     .descendants()
-    .filter(d => d.data.id === selected)
+    .filter(d => selected.includes(d.data.id))
     .forEach(d => drawPoint(ctx, d, t, 8));
   ctx.fillStyle = "rgba(0, 128, 255, 0.8)";
   ctx.fill();

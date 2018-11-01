@@ -5,74 +5,103 @@ import {
   getGraphCoordinatesForEvent
 } from "../../graph/canvasUtil";
 
-const coordsToSelection = coords =>
-  coords != null
+const createSelectionRectangle = (additive, start, end) =>
+  start != null && end != null
     ? {
-        x: Math.min(coords.x0, coords.x1),
-        y: Math.min(coords.y0, coords.y1),
-        width: Math.abs(coords.x0 - coords.x1),
-        height: Math.abs(coords.y0 - coords.y1)
+        additive,
+        x0: Math.min(start.x, end.x),
+        y0: Math.min(start.y, end.y),
+        x1: Math.max(start.x, end.x),
+        y1: Math.max(start.y, end.y)
       }
     : null;
 
-export default (ref, canvasOrigin) => {
-  const [rectangleCoords, setRectangleCoords] = useState(null);
-  const needsSelectionListeners = rectangleCoords != null;
+export default (ref, canvasOrigin, { onRectangleSelected } = {}) => {
+  const [rectStart, setRectStart] = useState(null);
+  const [rectEnd, setRectEnd] = useState(null);
+  const [additive, setAdditive] = useState(false);
+  const selectionRectangle = useMemo(
+    () => createSelectionRectangle(additive, rectStart, rectEnd),
+    [additive, rectStart, rectEnd]
+  );
 
   const startSelectionRectangle = useCallback(
     e => {
       const graphCoords = getGraphCoordinatesForEvent(canvasOrigin, e);
       if (graphCoords != null) {
-        const { x, y } = graphCoords;
-        setRectangleCoords({ x0: x, y0: y, x1: x, y1: y });
+        setRectStart(graphCoords);
+        setRectEnd(graphCoords);
+        setAdditive(e.shiftKey);
       }
     },
-    [setRectangleCoords]
+    [setRectStart, setAdditive]
   );
-
-  const cancelSelectionRectangle = useCallback(() => setRectangleCoords(null), [
-    setRectangleCoords
-  ]);
 
   const updateSelectionRectangle = useCallback(
     e => {
       const origin = ref.current.getBoundingClientRect();
       const canvasCoords = { x: e.pageX - origin.x, y: e.pageY - origin.y };
-      const { x: x1, y: y1 } = canvasCoordsToGraphCoords(
+      const graphCoords = canvasCoordsToGraphCoords(
         canvasOrigin.get(),
         canvasCoords
       );
-      setRectangleCoords(
-        s => (s != null ? { x0: s.x0, y0: s.y0, x1, y1 } : null)
-      );
+      setRectEnd(graphCoords);
     },
-    [setRectangleCoords]
+    [setRectEnd]
   );
 
+  const cancelSelectionRectangle = useCallback(
+    () => {
+      setRectStart(null);
+      setRectEnd(null);
+      setAdditive(false);
+    },
+    [setRectEnd]
+  );
+
+  const finalizeSelectionRectangle = useCallback(
+    () => {
+      if (selectionRectangle != null && onRectangleSelected != null) {
+        onRectangleSelected(selectionRectangle);
+      }
+      setRectEnd(null);
+    },
+    [selectionRectangle, setRectEnd]
+  );
+
+  const toggleAdditive = useCallback(
+    e => {
+      if (e.key === "Shift") setAdditive(e.type === "keydown");
+    },
+    [setAdditive]
+  );
+
+  const needsSelectionListeners = selectionRectangle != null;
   useEffect(
     () => {
       if (needsSelectionListeners) {
         document.addEventListener("mousemove", updateSelectionRectangle);
-        document.addEventListener("mouseup", cancelSelectionRectangle);
+        document.addEventListener("mouseup", finalizeSelectionRectangle);
+        document.addEventListener("keydown", toggleAdditive);
+        document.addEventListener("keyup", toggleAdditive);
       }
 
       return () => {
         document.removeEventListener("mousemove", updateSelectionRectangle);
-        document.removeEventListener("mouseup", cancelSelectionRectangle);
+        document.removeEventListener("mouseup", finalizeSelectionRectangle);
+        document.removeEventListener("keydown", toggleAdditive);
+        document.removeEventListener("keyup", toggleAdditive);
       };
     },
     [
       needsSelectionListeners,
       updateSelectionRectangle,
-      cancelSelectionRectangle
+      finalizeSelectionRectangle,
+      toggleAdditive
     ]
   );
 
   useGlobalKeyboardShortcut("Escape", cancelSelectionRectangle);
-
-  const selectionRectangle = useMemo(() => coordsToSelection(rectangleCoords), [
-    rectangleCoords
-  ]);
 
   return {
     selectionRectangle,

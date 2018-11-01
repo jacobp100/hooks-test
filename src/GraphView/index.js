@@ -1,7 +1,6 @@
-import React, { useRef } from "react";
+import React, { useReducer, useRef } from "react";
 import Canvas from "../Canvas";
 import Button from "../Button";
-import useStore from "../hooks/useStore";
 import drawGraph from "../graph/drawGraph";
 import useTreeLayout from "../graph/useTreeLayout";
 import useCanvasDrawer from "./hooks/useCanvasDrawer";
@@ -22,18 +21,25 @@ const viewport = {
 // So we can ctrl+click on Mac
 const cancelContextMenu = e => e.preventDefault();
 
+const applySeletion = (treeLayout, rect) =>
+  store.setSelected(treeLayout.nodesInRect(rect), rect.additive);
+
+const previewSelection = (state, treeLayout, selectionRectangle) =>
+  selectionRectangle != null
+    ? store.reducer(state, applySeletion(treeLayout, selectionRectangle))
+        .selected
+    : state.selected;
+
 export default () => {
   const ref = useRef(null);
-  const { state, setSelected, clearSelected, addChildToSelected } = useStore(
-    store
-  );
-  const { selected, nodes } = state;
+  const [state, dispatch] = useReducer(store.reducer, store.defaultState);
 
-  const treeLayout = useTreeLayout(nodes);
+  const treeLayout = useTreeLayout(state.nodes);
   const { canvasOrigin, selectionRectangle } = useGestureHandlers(ref, {
     objectAtPoint: treeLayout.nodeAtPoint,
-    onSelect: setSelected,
-    onBackgroundClicked: clearSelected
+    onSelect: (node, additive) => dispatch(store.setSelected([node], additive)),
+    onRectangleSelected: rect => dispatch(applySeletion(treeLayout, rect)),
+    onBackgroundClicked: () => dispatch(store.clearSelected())
   });
   const zoomState = { root: treeLayout.root, viewport, canvasOrigin };
   const zoomHandlers = useZoomHandlersWithTreeLayout(zoomState);
@@ -46,6 +52,7 @@ export default () => {
     zoomHandlers
   );
 
+  const selected = previewSelection(state, treeLayout, selectionRectangle);
   const canvasState = { root: treeLayout.root, selected, selectionRectangle };
   useCanvasDrawer(ref, drawGraph, viewport, canvasState, canvasOrigin, t);
 
@@ -54,10 +61,15 @@ export default () => {
       <Canvas ref={ref} viewport={viewport} onContextMenu={cancelContextMenu} />
       <ZoomButtons zoomHandlers={zoomHandlers} />
       <br />
-      {selected != null ? (
+      {selected.length > 1 ? (
+        <span>{selected.length} nodes selected</span>
+      ) : selected.length === 1 ? (
         <>
-          <span>{selected}</span>
-          <Button onClick={addChildToSelected} title="Add Child" />
+          <span>{selected[0]}</span>
+          <Button
+            onClick={() => dispatch(store.addChildToSelected())}
+            title="Add Child"
+          />
         </>
       ) : (
         <span>No node selected</span>

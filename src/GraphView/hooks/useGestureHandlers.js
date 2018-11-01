@@ -4,7 +4,10 @@ import useD3MomentumZoom from "../../animation/useD3MomentumZoom";
 import createClickRecognizer from "../../animation/gestures/createClickRecognizer";
 import { getGraphCoordinatesForEvent } from "../../graph/canvasUtil";
 
-export default (ref, { objectAtPoint, onSelect, onBackgroundClicked }) => {
+export default (
+  ref,
+  { objectAtPoint, onSelect, onRectangleSelected, onBackgroundClicked }
+) => {
   const clickRecognizer = useMemo(createClickRecognizer);
 
   const canvasOrigin = useD3MomentumZoom(ref, {
@@ -21,7 +24,8 @@ export default (ref, { objectAtPoint, onSelect, onBackgroundClicked }) => {
             ? objectAtPoint(graphCoords)
             : null;
         if (object != null) {
-          if (onSelect != null) onSelect(object);
+          const isAdditive = e.shiftKey;
+          if (onSelect != null) onSelect(object, isAdditive);
           return false;
         }
       }
@@ -38,7 +42,8 @@ export default (ref, { objectAtPoint, onSelect, onBackgroundClicked }) => {
 
   const { selectionRectangle, startSelectionRectangle } = useSelectionRectangle(
     ref,
-    canvasOrigin
+    canvasOrigin,
+    { onRectangleSelected }
   );
 
   return { canvasOrigin, selectionRectangle };
