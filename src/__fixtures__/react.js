@@ -85,22 +85,22 @@ export const useState = initialState => {
   }
 };
 
-export const useMemo = (fn, inputs) => {
+export const useMemo = (create, inputs) => {
   let hook = getHook();
   let current;
   if (hook != null) {
     const prevInputs = hook.inputs;
     const canReuse =
-      (inputs == null && hook.fn === fn) ||
+      (inputs == null && hook.create === create) ||
       (inputs != null && valuesEqual(prevInputs, inputs));
     if (!canReuse) {
-      hook.current = fn();
+      hook.current = create();
     }
     hook.inputs = inputs;
     return hook.current;
   } else {
-    current = fn();
-    addHook({ type: MEMO, fn, inputs, current });
+    current = create();
+    addHook({ type: MEMO, create, inputs, current });
     return current;
   }
 };
@@ -122,7 +122,6 @@ export const useEffect = (fn, inputs) => {
     const cleanup = fn();
     addHook({
       type: EFFECT,
-      fn,
       inputs,
       cleanup
     });
