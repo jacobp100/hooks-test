@@ -4,7 +4,7 @@ export default (...values) =>
   action(({ update }) => {
     const currentValues = values.map(v => v.get());
 
-    const unsubscriptions = values.map((value, i) =>
+    const subscriptions = values.map((value, i) =>
       value.subscribe(currentValue => {
         currentValues[i] = currentValue;
         update(currentValues);
@@ -13,7 +13,7 @@ export default (...values) =>
 
     return {
       stop() {
-        unsubscriptions.forEach(unsubscription => unsubscription.unsubscribe());
+        subscriptions.forEach(subscription => subscription.unsubscribe());
       }
     };
   });

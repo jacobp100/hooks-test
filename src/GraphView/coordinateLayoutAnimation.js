@@ -8,6 +8,15 @@ const animateMaintainingNodeCanvasPosition = (t, camera, d) => {
   const initialY = getY(d, 0) * z;
   const initialZoom = initialcamera.zoom;
 
+  /*
+  Not too sure why this is needed. In the case the tree changes, we unsubscribe the render callback
+  from value updates, start this layout animation, and then re-subscribe the render callback to
+  value updates.
+
+  This isn't really a documented method, but neither is `update`.
+  */
+  t.updateCurrent(0);
+
   const animation = tween({ from: 0, to: 1 });
   animation
     .pipe(t => ({

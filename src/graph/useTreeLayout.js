@@ -1,4 +1,4 @@
-import { useMutationEffect, useRef, useMemo, useCallback } from "react";
+import { useLayoutEffect, useRef, useMemo, useCallback } from "react";
 import { layoutTree } from "./treeLayout";
 
 const getChangedNodes = (previous, next) => ({
@@ -18,7 +18,7 @@ export default (nodes, { onLayout } = {}) => {
   const layout = useMemo(() => layoutTree(nodes, previous), [nodes]);
   const didLayout = layout !== previous;
 
-  useMutationEffect(() => {
+  useLayoutEffect(() => {
     previousLayoutRef.current = layout;
 
     if (didLayout) {

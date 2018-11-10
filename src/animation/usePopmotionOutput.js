@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 export const useActionOutput = (value, updater) => {
-  useEffect(() => value.start(updater).stop, [value, updater]);
+  useLayoutEffect(() => value.start(updater).stop, [value, updater]);
 };
 
 export const useMulticastOutput = (value, updater) => {
-  useEffect(() => value.subscribe(updater).unsubscribe, [value, updater]);
+  useLayoutEffect(() => value.subscribe(updater).unsubscribe, [value, updater]);
 };
