@@ -43,7 +43,7 @@ export default () => {
   useZoomResetOnMount(zoomHandlers);
 
   const selected = previewSelection(state, tree, selectionRectangle);
-  const canvasParams = { root: tree.root, selected, selectionRectangle };
+  const canvasParams = { tree, selected, selectionRectangle };
   useCanvasDrawer(ref, drawGraph, viewport, canvasParams, camera, t);
 
   return (

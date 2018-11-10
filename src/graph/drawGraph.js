@@ -12,24 +12,21 @@ const drawPoint = (ctx, d, t, radius = 5) => {
   ctx.arc(x, y, radius, 0, 2 * Math.PI);
 };
 
-export default (ctx, { root, selected }, t = 1) => {
+export default (ctx, { tree, selected }, t = 1) => {
   ctx.beginPath();
   drawLink.context(ctx);
-  root.links().forEach(d => drawLink(d, t));
+  tree.root.links().forEach(d => drawLink(d, t));
   ctx.lineWidth = 1;
   ctx.strokeStyle = "red";
   ctx.stroke();
 
   ctx.beginPath();
-  root.each(d => drawPoint(ctx, d, t));
+  tree.root.each(d => drawPoint(ctx, d, t));
   ctx.fillStyle = "black";
   ctx.fill();
 
   ctx.beginPath();
-  root
-    .descendants()
-    .filter(d => selected.includes(d.data.id))
-    .forEach(d => drawPoint(ctx, d, t, 8));
+  selected.map(id => tree.idMap.get(id)).forEach(d => drawPoint(ctx, d, t, 8));
   ctx.fillStyle = "rgba(0, 128, 255, 0.8)";
   ctx.fill();
 };
