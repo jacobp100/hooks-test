@@ -1,25 +1,20 @@
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { select, event } from "d3-selection";
 import { zoom, zoomIdentity } from "d3-zoom";
-import useRefValue from "../hooks/useRefValue";
 
 export default (ref, callbacks) => {
   /*
-  Allow us to use the same event handlers for d3.zoom, even if the callbacks
-  change. This is actually a correctness issue rather than performance: if the
-  user is zooming when the callbacks changed, we would have removed the zoom
-  handlers. That is not what we would want.
-
-  This behaviour is also similar to how React Native internally handles events.
-  All events like `onPress` are actually instance properties (usually in the
-  form _onPress) that check if there is the equivalent callback in the prop,
-  and then calls it. The instance properties are then passed to the native code
-  component rather than the callback in the props.
+  See https://reactjs.org/docs/hooks-faq.html#how-to-read-an-often-changing-value-from-usecallback
+  This is done for correctness, not performance. If we remove zoom events, any
+  current zoom interactions will be stopped.
   */
-  const callbacksRef = useRefValue(callbacks);
-  const selectionRef = useRef(null);
+  const callbacksRef = useRef(callbacks);
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  });
 
-  useEffect(
+  const selectionRef = useRef(null);
+  useLayoutEffect(
     () => {
       selectionRef.current = select(ref.current);
       const z = zoom()
@@ -48,17 +43,15 @@ export default (ref, callbacks) => {
     [ref, selectionRef, callbacksRef]
   );
 
-  const api = useMemo(
-    () => ({
-      setTransform({ x, y, zoom }) {
-        selectionRef.current.property(
-          "__zoom",
-          zoomIdentity.translate(x, y).scale(zoom)
-        );
-      }
-    }),
+  const setTransform = useCallback(
+    ({ x, y, zoom }) => {
+      selectionRef.current.property(
+        "__zoom",
+        zoomIdentity.translate(x, y).scale(zoom)
+      );
+    },
     [selectionRef]
   );
 
-  return api;
+  return { setTransform };
 };

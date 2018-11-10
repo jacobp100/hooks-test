@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export const useValueOutput = (value, updater) => {
+export const useActionOutput = (value, updater) => {
   useEffect(() => value.start(updater).stop, [value, updater]);
 };
 

@@ -1,11 +1,11 @@
-export const canvasCoordsToGraphCoords = (canvasOrigin, { x, y }) => ({
-  x: (x - canvasOrigin.x) / canvasOrigin.zoom,
-  y: (y - canvasOrigin.y) / canvasOrigin.zoom
+export const canvasCoordsToGraphCoords = (camera, { x, y }) => ({
+  x: (x - camera.x) / camera.zoom,
+  y: (y - camera.y) / camera.zoom
 });
 
-export const graphCoordsToCanvasCoords = (canvasOrigin, { x, y }) => ({
-  x: x * canvasOrigin.zoom + canvasOrigin.x,
-  y: y * canvasOrigin.zoom + canvasOrigin.y
+export const graphCoordsToCanvasCoords = (camera, { x, y }) => ({
+  x: x * camera.zoom + camera.x,
+  y: y * camera.zoom + camera.y
 });
 
 export const getCanvasCoordinatesForEvent = e => {
@@ -19,9 +19,9 @@ export const getCanvasCoordinatesForEvent = e => {
   }
 };
 
-export const getGraphCoordinatesForEvent = (canvasOrigin, e) => {
+export const getGraphCoordinatesForEvent = (camera, e) => {
   const canvasCoords = getCanvasCoordinatesForEvent(e);
   return canvasCoords != null
-    ? canvasCoordsToGraphCoords(canvasOrigin.get(), canvasCoords)
+    ? canvasCoordsToGraphCoords(camera.get(), canvasCoords)
     : null;
 };

@@ -4,9 +4,24 @@ const createRoot = stratify();
 
 const layout = tree().nodeSize([5, 5]);
 
+export const applyPreviousCoords = (previous, next) => {
+  next.idMap.forEach(d => {
+    const closestPreviousId = d
+      .ancestors()
+      .map(other => other.data.id)
+      .find(otherId => previous.idMap.has(otherId));
+
+    if (closestPreviousId != null) {
+      const closestPreviousNode = previous.idMap.get(closestPreviousId);
+      d.xPrev = closestPreviousNode.x;
+      d.yPrev = closestPreviousNode.y;
+    }
+  });
+};
+
 const scaleX = 3;
 const scaleY = 5;
-export const layoutTree = nodes => {
+export const layoutTree = (nodes, previous) => {
   const idMap = new Map();
   const root = layout(createRoot(nodes)).each(d => {
     idMap.set(d.data.id, d);
@@ -16,7 +31,13 @@ export const layoutTree = nodes => {
     d.yPrev = d.y;
   });
 
-  return { root, idMap };
+  const next = { root, idMap };
+
+  if (previous != null) {
+    applyPreviousCoords(previous, next);
+  }
+
+  return next;
 };
 
 export const treeBounds = root => {

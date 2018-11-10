@@ -1,14 +1,15 @@
 import React, { useReducer, useRef } from "react";
 import Canvas from "../Canvas";
 import Button from "../Button";
+import usePopmotionValue from "../animation/usePopmotionValue";
 import drawGraph from "../graph/drawGraph";
 import useTreeLayout from "../graph/useTreeLayout";
 import useCanvasDrawer from "./hooks/useCanvasDrawer";
-import useCoordinatedLayoutAnimation from "./hooks/useCoordinatedLayoutAnimation";
 import useGestureHandlers from "./hooks/useGestureHandlers";
 import useZoomHandlersWithTreeLayout from "./hooks/useZoomHandlersWithTreeLayout";
 import useZoomKeyboardShortcuts from "./hooks/useZoomKeyboardShortcuts";
 import useZoomResetOnMount from "./hooks/useZoomResetOnMount";
+import coordinateLayoutAnimation from "./coordinateLayoutAnimation";
 import * as store from "./store";
 import ZoomButtons from "./ZoomButtons";
 
@@ -21,40 +22,36 @@ const viewport = {
 // So we can ctrl+click on Mac
 const cancelContextMenu = e => e.preventDefault();
 
-const applySeletion = (treeLayout, rect) =>
-  store.setSelected(treeLayout.nodesInRect(rect), rect.additive);
+const applySeletion = (tree, rect) =>
+  store.setSelected(tree.nodesInRect(rect), rect.additive);
 
-const previewSelection = (state, treeLayout, selectionRectangle) =>
+const previewSelection = (state, tree, selectionRectangle) =>
   selectionRectangle != null
-    ? store.reducer(state, applySeletion(treeLayout, selectionRectangle))
-        .selected
+    ? store.reducer(state, applySeletion(tree, selectionRectangle)).selected
     : state.selected;
 
 export default () => {
   const ref = useRef(null);
   const [state, dispatch] = useReducer(store.reducer, store.defaultState);
 
-  const treeLayout = useTreeLayout(state.nodes);
-  const { canvasOrigin, selectionRectangle } = useGestureHandlers(ref, {
-    objectAtPoint: treeLayout.nodeAtPoint,
+  const t = usePopmotionValue(1); // Global layout animation for the graph (t is d3 convention)
+  const tree = useTreeLayout(state.nodes, {
+    onLayout: params =>
+      coordinateLayoutAnimation(t, camera, zoomHandlers, tree, params)
+  });
+  const { camera, selectionRectangle } = useGestureHandlers(ref, {
+    objectAtPoint: tree.nodeAtPoint,
     onSelect: (node, additive) => dispatch(store.setSelected([node], additive)),
-    onRectangleSelected: rect => dispatch(applySeletion(treeLayout, rect)),
+    onRectangleSelected: rect => dispatch(applySeletion(tree, rect)),
     onBackgroundClicked: () => dispatch(store.clearSelected())
   });
-  const zoomState = { root: treeLayout.root, viewport, canvasOrigin };
-  const zoomHandlers = useZoomHandlersWithTreeLayout(zoomState);
+  const zoomHandlers = useZoomHandlersWithTreeLayout(viewport, camera, tree);
   useZoomKeyboardShortcuts(zoomHandlers);
   useZoomResetOnMount(zoomHandlers);
 
-  const t = useCoordinatedLayoutAnimation(
-    canvasOrigin,
-    treeLayout,
-    zoomHandlers
-  );
-
-  const selected = previewSelection(state, treeLayout, selectionRectangle);
-  const canvasState = { root: treeLayout.root, selected, selectionRectangle };
-  useCanvasDrawer(ref, drawGraph, viewport, canvasState, canvasOrigin, t);
+  const selected = previewSelection(state, tree, selectionRectangle);
+  const canvasParams = { root: tree.root, selected, selectionRectangle };
+  useCanvasDrawer(ref, drawGraph, viewport, canvasParams, camera, t);
 
   return (
     <div>

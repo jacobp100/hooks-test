@@ -10,7 +10,7 @@ export default (
 ) => {
   const clickRecognizer = useMemo(createClickRecognizer);
 
-  const canvasOrigin = useD3MomentumZoom(ref, {
+  const camera = useD3MomentumZoom(ref, {
     filter(e) {
       if (e.type === "mousedown" && e.button === 0) {
         if (e.ctrlKey) {
@@ -18,7 +18,7 @@ export default (
           return false;
         }
 
-        const graphCoords = getGraphCoordinatesForEvent(canvasOrigin, e);
+        const graphCoords = getGraphCoordinatesForEvent(camera, e);
         const object =
           graphCoords != null && objectAtPoint != null
             ? objectAtPoint(graphCoords)
@@ -42,9 +42,9 @@ export default (
 
   const { selectionRectangle, startSelectionRectangle } = useSelectionRectangle(
     ref,
-    canvasOrigin,
+    camera,
     { onRectangleSelected }
   );
 
-  return { canvasOrigin, selectionRectangle };
+  return { camera, selectionRectangle };
 };

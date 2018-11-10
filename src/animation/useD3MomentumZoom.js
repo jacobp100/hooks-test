@@ -7,13 +7,13 @@ import createMomentumPanLogger from "./gestures/createMomentumPanLogger";
 const createInitialValue = () => value({ x: 0, y: 0, zoom: 1 });
 
 export default (ref, handlers) => {
-  const canvasOrigin = useMemo(createInitialValue);
+  const camera = useMemo(createInitialValue);
   const momentumRecognizer = useMemo(createMomentumPanLogger);
 
   const { setTransform } = useD3Zoom(ref, {
     filter: handlers.filter,
     onStartZoom(e) {
-      canvasOrigin.stop();
+      camera.stop();
       momentumRecognizer.begin();
       const { onStartZoom } = handlers;
       if (onStartZoom != null) onStartZoom(e);
@@ -21,8 +21,8 @@ export default (ref, handlers) => {
     onZoom(e) {
       const { x, y, k } = e.transform;
       const coords = { x, y, zoom: k };
-      canvasOrigin.stop();
-      canvasOrigin.update(coords);
+      camera.stop();
+      camera.update(coords);
       momentumRecognizer.update(coords);
 
       const { onZoom } = handlers;
@@ -32,10 +32,10 @@ export default (ref, handlers) => {
       const velocity = momentumRecognizer.finalize();
       if (velocity != null) {
         physics({
-          from: canvasOrigin.get(),
+          from: camera.get(),
           velocity: { x: velocity.x, y: velocity.y, zoom: 0 },
           friction: 0.3
-        }).start(canvasOrigin);
+        }).start(camera);
       }
 
       const { onEndZoom } = handlers;
@@ -43,7 +43,7 @@ export default (ref, handlers) => {
     }
   });
 
-  useMulticastOutput(canvasOrigin, setTransform);
+  useMulticastOutput(camera, setTransform);
 
-  return canvasOrigin;
+  return camera;
 };

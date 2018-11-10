@@ -16,7 +16,7 @@ const createSelectionRectangle = (additive, start, end) =>
       }
     : null;
 
-export default (ref, canvasOrigin, { onRectangleSelected } = {}) => {
+export default (ref, camera, { onRectangleSelected } = {}) => {
   const [rectStart, setRectStart] = useState(null);
   const [rectEnd, setRectEnd] = useState(null);
   const [additive, setAdditive] = useState(false);
@@ -27,7 +27,7 @@ export default (ref, canvasOrigin, { onRectangleSelected } = {}) => {
 
   const startSelectionRectangle = useCallback(
     e => {
-      const graphCoords = getGraphCoordinatesForEvent(canvasOrigin, e);
+      const graphCoords = getGraphCoordinatesForEvent(camera, e);
       if (graphCoords != null) {
         setRectStart(graphCoords);
         setRectEnd(graphCoords);
@@ -41,10 +41,7 @@ export default (ref, canvasOrigin, { onRectangleSelected } = {}) => {
     e => {
       const origin = ref.current.getBoundingClientRect();
       const canvasCoords = { x: e.pageX - origin.x, y: e.pageY - origin.y };
-      const graphCoords = canvasCoordsToGraphCoords(
-        canvasOrigin.get(),
-        canvasCoords
-      );
+      const graphCoords = canvasCoordsToGraphCoords(camera.get(), canvasCoords);
       setRectEnd(graphCoords);
     },
     [setRectEnd]

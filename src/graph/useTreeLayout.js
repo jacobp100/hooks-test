@@ -1,60 +1,35 @@
-import { useRef, useMemo, useCallback } from "react";
+import { useMutationEffect, useRef, useMemo, useCallback } from "react";
 import { layoutTree } from "./treeLayout";
 
-const applyPreviousCoords = (previous, next) => {
-  const findParentInPreviousTree = start => {
-    let d = start.parent;
-    while (d != null) {
-      if (previous.idMap.has(d.data.id)) {
-        return d;
+const getChangedNodes = (previous, next) => ({
+  addedNodes: Array.from(next.idMap.keys()).filter(
+    id => !previous.idMap.has(id)
+  ),
+  removedNodes: Array.from(previous.idMap.keys()).filter(
+    id => !next.idMap.has(id)
+  )
+});
+
+const noLayoutArgs = { addedNodes: [], removedNodes: [] };
+
+export default (nodes, { onLayout } = {}) => {
+  const previousLayoutRef = useRef(null);
+  const previous = previousLayoutRef.current;
+  const layout = useMemo(() => layoutTree(nodes, previous), [nodes]);
+  const didLayout = layout !== previous;
+
+  useMutationEffect(() => {
+    previousLayoutRef.current = layout;
+
+    if (didLayout) {
+      let args =
+        previous != null ? getChangedNodes(previous, layout) : noLayoutArgs;
+
+      if (typeof onLayout === "function") {
+        onLayout(args);
       }
-      d = d.parent;
-    }
-    return null;
-  };
-
-  const addedNodes = [];
-  next.idMap.forEach((d, id) => {
-    const previousD = previous.idMap.get(id);
-    if (previousD != null) {
-      d.xPrev = previousD.x;
-      d.yPrev = previousD.y;
-      return;
-    }
-
-    addedNodes.push(id);
-
-    const prevParent = findParentInPreviousTree(d);
-    if (prevParent != null) {
-      d.xPrev = prevParent.xPrev;
-      d.yPrev = prevParent.yPrev;
     }
   });
-
-  const removedNodes = Array.from(previous.idMap.keys()).filter(
-    id => !next.idMap.has(id)
-  );
-
-  return { addedNodes, removedNodes };
-};
-
-export default nodes => {
-  const previousLayoutRef = useRef(null);
-
-  const layout = useMemo(() => layoutTree(nodes), [nodes]);
-  const didLayout = layout !== previousLayoutRef.current;
-
-  let addedNodes;
-  let removedNodes;
-  if (didLayout && previousLayoutRef.current != null) {
-    const out = applyPreviousCoords(previousLayoutRef.current, layout);
-    addedNodes = out.addedNodes;
-    removedNodes = out.removedNodes;
-  } else {
-    addedNodes = [];
-    removedNodes = [];
-  }
-  previousLayoutRef.current = layout;
 
   const { root, idMap } = layout;
   const nodeAtPoint = useCallback(
@@ -76,5 +51,5 @@ export default nodes => {
     [layout]
   );
 
-  return { root, idMap, nodeAtPoint, nodesInRect, addedNodes, removedNodes };
+  return { root, idMap, nodeAtPoint, nodesInRect };
 };
