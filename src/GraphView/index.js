@@ -11,6 +11,7 @@ import useZoomKeyboardShortcuts from "./hooks/useZoomKeyboardShortcuts";
 import useZoomResetOnMount from "./hooks/useZoomResetOnMount";
 import coordinateLayoutAnimation from "./coordinateLayoutAnimation";
 import * as store from "./store";
+import { applySeletion, previewSelection } from "./selectionUtil";
 import ZoomButtons from "./ZoomButtons";
 
 const viewport = {
@@ -21,14 +22,6 @@ const viewport = {
 
 // So we can ctrl+click on Mac
 const cancelContextMenu = e => e.preventDefault();
-
-const applySeletion = (tree, rect) =>
-  store.setSelected(tree.nodesInRect(rect), rect.additive);
-
-const previewSelection = (state, tree, selectionRectangle) =>
-  selectionRectangle != null
-    ? store.reducer(state, applySeletion(tree, selectionRectangle)).selected
-    : state.selected;
 
 export default () => {
   const ref = useRef(null);
