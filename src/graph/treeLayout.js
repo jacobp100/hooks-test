@@ -1,10 +1,6 @@
 import { stratify, tree } from "d3";
 
-const createRoot = stratify();
-
-const layout = tree().nodeSize([5, 5]);
-
-export const applyPreviousCoords = (previous, next) => {
+const applyPreviousCoords = (previous, next) => {
   next.idMap.forEach(d => {
     const closestPreviousId = d
       .ancestors()
@@ -18,6 +14,9 @@ export const applyPreviousCoords = (previous, next) => {
     }
   });
 };
+
+const createRoot = stratify();
+const layout = tree().nodeSize([5, 5]);
 
 const scaleX = 3;
 const scaleY = 5;
