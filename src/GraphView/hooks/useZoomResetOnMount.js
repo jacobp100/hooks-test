@@ -1,5 +1,5 @@
-import { useEffect } from "react";
+import { useMutationEffect } from "react";
 
 export default zoomHandlers => {
-  useEffect(() => zoomHandlers.resetZoom({ animated: false }), []);
+  useMutationEffect(() => zoomHandlers.resetZoom({ animated: false }), []);
 };
