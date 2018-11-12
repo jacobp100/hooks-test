@@ -13,9 +13,7 @@ Using component composition, I was able to split the logic into a few components
 
 So I tried again with hooks! It's. So. Much. Simpler. In total, we're getting close to the previous 1,000 lines of tightly coupled logic. However, each file never goes much above 50 lines, and it is much easier to follow how things fit together.
 
-I thought it would be cool to share to share concepts on how to compose use directives to achieve something like this.
-
-I got all but drag and drop implemented here. I didn't do D&D because it used React-DND, which is a HOC and not hooks.
+I thought it would be cool to share to share concepts on how to compose use directives to achieve something like this. It also demonstrates how this can work with existing HOC patterns (and possible bugs there).
 
 If you want to read about how I found it, I replied in the RFC over [here](https://github.com/reactjs/rfcs/pull/68#issuecomment-433640113).
 

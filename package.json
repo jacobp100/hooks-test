@@ -9,6 +9,8 @@
     "lodash": "^4.17.11",
     "popmotion": "^8.4.1",
     "react": "^16.7.0-alpha.0",
+    "react-dnd": "^6.0.0",
+    "react-dnd-html5-backend": "^6.0.0",
     "react-dom": "^16.7.0-alpha.0"
   },
   "devDependencies": {

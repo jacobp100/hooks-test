@@ -1,18 +1,20 @@
 import React, { useReducer, useRef } from "react";
 import Canvas from "../Canvas";
-import Button from "../Button";
 import usePopmotionValue from "../animation/usePopmotionValue";
 import drawGraph from "../graph/drawGraph";
 import useTreeLayout from "../graph/useTreeLayout";
+import { canvasCoordsToGraphCoords } from "../graph/canvasUtil";
 import useCanvasDrawer from "./hooks/useCanvasDrawer";
 import useGestureHandlers from "./hooks/useGestureHandlers";
 import useZoomHandlersWithTreeLayout from "./hooks/useZoomHandlersWithTreeLayout";
 import useZoomKeyboardShortcuts from "./hooks/useZoomKeyboardShortcuts";
 import useZoomResetOnMount from "./hooks/useZoomResetOnMount";
+import { useDnd, connectDnd } from "./hooks/dnd";
 import coordinateLayoutAnimation from "./coordinateLayoutAnimation";
 import * as store from "./store";
 import { applySeletion, previewSelection } from "./selectionUtil";
 import ZoomButtons from "./ZoomButtons";
+import Selection from "./Selection";
 
 const viewport = {
   width: 500,
@@ -23,7 +25,7 @@ const viewport = {
 // So we can ctrl+click on Mac
 const cancelContextMenu = e => e.preventDefault();
 
-export default () => {
+const GraphView = React.forwardRef((props, imperativeMethods) => {
   const ref = useRef(null);
   const [state, dispatch] = useReducer(store.reducer, store.defaultState);
 
@@ -46,24 +48,31 @@ export default () => {
   const canvasParams = { tree, selected, selectionRectangle };
   useCanvasDrawer(ref, drawGraph, viewport, canvasParams, camera, t);
 
+  const wrapContainer = useDnd(props, imperativeMethods, {
+    nodeAtPosition(p) {
+      const origin = ref.current.getBoundingClientRect();
+      const canvasCoords = { x: p.x - origin.x, y: p.y - origin.y };
+      const graphCoords = canvasCoordsToGraphCoords(camera.get(), canvasCoords);
+      return tree.nodeAtPoint(graphCoords);
+    },
+    onNodeMoved({ from, to }) {
+      dispatch(store.moveNode({ from, to }));
+    }
+  });
+
   return (
     <div>
-      <Canvas ref={ref} viewport={viewport} onContextMenu={cancelContextMenu} />
-      <ZoomButtons zoomHandlers={zoomHandlers} />
-      <br />
-      {selected.length > 1 ? (
-        <span>{selected.length} nodes selected</span>
-      ) : selected.length === 1 ? (
-        <>
-          <span>{selected[0]}</span>
-          <Button
-            onClick={() => dispatch(store.addChildToSelected())}
-            title="Add Child"
-          />
-        </>
-      ) : (
-        <span>No node selected</span>
+      {wrapContainer(
+        <Canvas
+          ref={ref}
+          viewport={viewport}
+          onContextMenu={cancelContextMenu}
+        />
       )}
+      <ZoomButtons zoomHandlers={zoomHandlers} />
+      <Selection selected={selected} dispatch={dispatch} />
     </div>
   );
-};
+});
+
+export default connectDnd(GraphView);

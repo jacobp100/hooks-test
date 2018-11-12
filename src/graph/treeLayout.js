@@ -21,6 +21,8 @@ const layout = tree().nodeSize([5, 5]);
 const scaleX = 3;
 const scaleY = 5;
 export const layoutTree = (nodes, previous) => {
+  // This should really mutate an existing tree rather than creating a new one
+  // But this will suffice for demonstration purposes
   const idMap = new Map();
   const root = layout(createRoot(nodes)).each(d => {
     idMap.set(d.data.id, d);

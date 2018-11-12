@@ -28,18 +28,23 @@ const animateMaintainingNodeCanvasPosition = (t, camera, d) => {
   animation.pipe(x => x).start(t);
 };
 
-export default (
-  t,
-  camera,
-  zoomHandlers,
-  treeLayout,
-  { addedNodes, removedNodes }
-) => {
-  if (addedNodes.length === 1 && removedNodes.length === 0) {
+const animateLayoutChange = (t, camera, zoomHandlers) => {
+  t.updateCurrent(0);
+  const animation = tween({ from: 0, to: 1 });
+  animation.start(t);
+  zoomHandlers.resetZoom({ animation });
+};
+
+export default (t, camera, zoomHandlers, treeLayout, layout) => {
+  const added = layout.addedNodes.length;
+  const removed = layout.removedNodes.length;
+  const moved = layout.movedNodes.length;
+
+  if (added === 1 && moved === 0 && removed === 0) {
     // Keep parent in same position on screen
-    const d = treeLayout.idMap.get(addedNodes[0]).parent;
+    const d = treeLayout.idMap.get(layout.addedNodes[0]).parent;
     animateMaintainingNodeCanvasPosition(t, camera, d);
-  } else if (addedNodes.length !== 0 || removedNodes.length !== 0) {
-    zoomHandlers.resetZoom();
+  } else if (added !== 0 || removed !== 0 || moved !== 0) {
+    animateLayoutChange(t, camera, zoomHandlers);
   }
 };

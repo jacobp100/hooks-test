@@ -1,16 +1,32 @@
 import { useLayoutEffect, useRef, useMemo, useCallback } from "react";
+import { without, filter, intersection } from "lodash/fp";
 import { layoutTree } from "./treeLayout";
 
-const getChangedNodes = (previous, next) => ({
-  addedNodes: Array.from(next.idMap.keys()).filter(
-    id => !previous.idMap.has(id)
-  ),
-  removedNodes: Array.from(previous.idMap.keys()).filter(
-    id => !next.idMap.has(id)
-  )
-});
+const parentId = node => (node.parent != null ? node.parent.id : null);
 
-const noLayoutArgs = { addedNodes: [], removedNodes: [] };
+const indexInParent = node =>
+  node.parent != null ? node.parent.children.indexOf(node) : 0;
+
+const getChangedNodes = (previous, next) => {
+  const nextIds = Array.from(next.idMap.keys());
+  const previousIds = Array.from(previous.idMap.keys());
+
+  return {
+    addedNodes: without(previousIds, nextIds),
+    removedNodes: without(nextIds, previousIds),
+    movedNodes: filter(id => {
+      const nextNode = next.idMap.get(id);
+      const previousNode = previous.idMap.get(id);
+
+      return (
+        parentId(nextNode) !== parentId(previousNode) ||
+        indexInParent(nextNode) !== indexInParent(previousNode)
+      );
+    }, intersection(nextIds, previousIds))
+  };
+};
+
+const noLayoutArgs = { addedNodes: [], removedNodes: [], movedNodes: [] };
 
 export default (nodes, { onLayout } = {}) => {
   const previousLayoutRef = useRef(null);
