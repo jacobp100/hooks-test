@@ -1,6 +1,6 @@
 import React, { useEffect, useImperativeMethods } from "react";
-import { DragDropContext, DragSource, DropTarget } from "react-dnd";
-import HTML5Backend, { getEmptyImage } from "react-dnd-html5-backend";
+import { DragSource, DropTarget } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
 import { flow } from "lodash/fp";
 import { TYPE_ITEM } from "../../dnd";
 
@@ -81,6 +81,5 @@ export const connectDnd = flow(
     (connect, monitor) => ({
       connectDropTarget: connect.dropTarget()
     })
-  ),
-  DragDropContext(HTML5Backend)
+  )
 );
