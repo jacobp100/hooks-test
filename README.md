@@ -1,8 +1,8 @@
-A somewhat complicated use case solved relatively nicely with React Hooks. Note this was the alpha version of hooks - there's a few things that need to be updated for the hooks that were actually released.
+A somewhat complicated use case solved relatively nicely with React Hooks. Note this was the alpha version of hooks - ~~there's a few things that need to be updated for the hooks that were actually released~~ stuff needs updating to the release version of hooks.
 
 One of my companies had an app made with React, but part of that was a canvas. The canvas was very complicated, and was essentially its own app. The main parts of complexity were:
 
-- Keyboard handlers.
+- Keyboard handlers
 - Pan and zoom
 - Momentum when panning (aka slippy maps, depends on above)
 - Layout animations
